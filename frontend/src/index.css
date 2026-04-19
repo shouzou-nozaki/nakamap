@@ -1,0 +1,94 @@
+* {
+  box-sizing: border-box;
+}
+
+:root {
+  color-scheme: light;
+  --color-primary: #4A90E2;
+  --color-primary-dark: #357abd;
+  --color-primary-light: #93c0ef;
+  --color-bg: #f5f5f5;
+  --color-white: #ffffff;
+  --color-danger: #e74c3c;
+  --color-success: #27ae60;
+  --color-text: #222222;
+  --color-text-secondary: #666666;
+  --color-text-muted: #999999;
+  --color-border: #eeeeee;
+
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  font-size: 16px;
+  line-height: 1.5;
+  color: var(--color-text);
+  background: var(--color-bg);
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  overflow: hidden;
+  background: #87ceeb;
+}
+
+@keyframes floatCloud {
+  from { transform: translateX(110vw); }
+  to   { transform: translateX(-120%); }
+}
+
+#root {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  height: 100vh;
+  overflow: auto;
+}
+
+/* アニメーション */
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideInLeft {
+  from {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* Leaflet のオーバーライド */
+.leaflet-container {
+  font-family: inherit;
+  background: linear-gradient(160deg, #c9dff5 0%, #a8cce8 40%, #b8d8e8 100%) !important;
+}
+
+.leaflet-tile-pane {
+  opacity: 1;
+}
+
+.leaflet-control-attribution {
+  background: rgba(255, 255, 255, 0.75) !important;
+  backdrop-filter: blur(4px);
+  border-radius: 6px 0 0 0 !important;
+  font-size: 10px !important;
+}

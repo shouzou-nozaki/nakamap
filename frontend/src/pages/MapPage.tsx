@@ -1,0 +1,201 @@
+import { useState, useEffect, useCallback } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import MapView from '../components/MapView';
+import ProfilePanel from '../components/ProfilePanel';
+import MenuPanel from '../components/MenuPanel';
+import { getLocations } from '../api/locations';
+import { getMyLocation } from '../api/locations';
+import { getProfile } from '../api/profiles';
+import type { LocationPin, Profile } from '../types';
+import useAuthStore from '../store/authStore';
+
+export default function MapPage() {
+  const { circleId } = useParams<{ circleId: string }>();
+  const navigate = useNavigate();
+  const { userId: myUserId } = useAuthStore();
+
+  const [pins, setPins] = useState<LocationPin[]>([]);
+  const [selectedProfile, setSelectedProfile] = useState<Profile | null>(null);
+  const [showProfile, setShowProfile] = useState(false);
+  const [showMenu, setShowMenu] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  const id = Number(circleId);
+
+  const loadPins = useCallback(async () => {
+    if (!id) return;
+    try {
+      const locs = await getLocations(id);
+      setPins(locs);
+    } catch {
+      // エラーは静かに無視
+    }
+  }, [id]);
+
+  useEffect(() => {
+    const init = async () => {
+      if (!id) return;
+      setLoading(true);
+      try {
+        // 自分の位置確認
+        const myLoc = await getMyLocation(id);
+        if (!myLoc) {
+          navigate(`/circles/${id}/profile/setup`);
+          return;
+        }
+        await loadPins();
+      } catch {
+        navigate(`/circles/${id}/profile/setup`);
+      } finally {
+        setLoading(false);
+      }
+    };
+    init();
+  }, [id, navigate, loadPins]);
+
+  const handlePinClick = async (userId: number) => {
+    setShowProfile(true);
+    setShowMenu(false);
+    try {
+      const profile = await getProfile(id, userId);
+      setSelectedProfile(profile);
+    } catch {
+      setSelectedProfile(null);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div style={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'transparent' }}>
+        <div style={{ textAlign: 'center', color: '#666' }}>
+          <div style={{ fontSize: '40px', marginBottom: '16px' }}>🗺️</div>
+          <p>マップを読み込み中...</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div style={{ position: 'relative', width: '100vw', height: '100vh', overflow: 'hidden' }}>
+      {/* 地図 */}
+      <div style={{ width: '100%', height: '100%' }}>
+        <MapView
+          pins={pins}
+          onPinClick={handlePinClick}
+          style={{ height: '100vh' }}
+        />
+      </div>
+
+      {/* 上部バー */}
+      <div
+        style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          zIndex: 500,
+          display: 'flex',
+          alignItems: 'center',
+          padding: '12px 16px',
+          pointerEvents: 'none',
+        }}
+      >
+        {/* メニューボタン */}
+        <button
+          onClick={() => { setShowMenu(true); setShowProfile(false); }}
+          style={{
+            background: 'white',
+            border: 'none',
+            borderRadius: '10px',
+            marginLeft: '54px',
+            width: '44px',
+            height: '44px',
+            fontSize: '20px',
+            cursor: 'pointer',
+            boxShadow: '0 2px 10px rgba(0,0,0,0.15)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            pointerEvents: 'all',
+          }}
+        >
+          ☰
+        </button>
+
+{/* 自分のピンクリック用ボタン */}
+        {myUserId && (
+          <button
+            onClick={() => handlePinClick(myUserId)}
+            style={{
+              background: 'white',
+              border: 'none',
+              borderRadius: '10px',
+              width: '44px',
+              height: '44px',
+              fontSize: '18px',
+              cursor: 'pointer',
+              boxShadow: '0 2px 10px rgba(0,0,0,0.15)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              marginLeft: 'auto',
+              pointerEvents: 'all',
+            }}
+            title="自分のプロフィール"
+          >
+            👤
+          </button>
+        )}
+      </div>
+
+      {/* 再読み込みボタン */}
+      <button
+        onClick={loadPins}
+        style={{
+          position: 'absolute',
+          bottom: '24px',
+          right: '16px',
+          zIndex: 500,
+          background: 'white',
+          border: 'none',
+          borderRadius: '50%',
+          width: '48px',
+          height: '48px',
+          fontSize: '20px',
+          cursor: 'pointer',
+          boxShadow: '0 2px 10px rgba(0,0,0,0.2)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}
+        title="メンバー位置を更新"
+      >
+        🔄
+      </button>
+
+      {/* オーバーレイ */}
+      {(showProfile || showMenu) && (
+        <div
+          onClick={() => { setShowProfile(false); setShowMenu(false); }}
+          style={{
+            position: 'fixed',
+            inset: 0,
+            background: 'rgba(0,0,0,0.3)',
+            zIndex: 999,
+          }}
+        />
+      )}
+
+      {/* メニューパネル */}
+      {showMenu && <MenuPanel onClose={() => setShowMenu(false)} />}
+
+      {/* プロフィールパネル */}
+      {showProfile && (
+        <ProfilePanel
+          profile={selectedProfile}
+          onClose={() => { setShowProfile(false); setSelectedProfile(null); }}
+        />
+      )}
+    </div>
+  );
+}

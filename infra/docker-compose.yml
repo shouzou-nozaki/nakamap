@@ -1,0 +1,38 @@
+version: "3.9"
+
+services:
+  db:
+    image: postgres:16
+    container_name: nakamap-db
+    environment:
+      POSTGRES_USER: nakamap
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: nakamap
+    ports:
+      - "5432:5432"
+    volumes:
+      - db_data:/var/lib/postgresql/data
+
+  backend:
+    build: ../backend
+    container_name: nakamap-backend
+    ports:
+      - "8080:8080"
+    depends_on:
+      - db
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/nakamap
+      SPRING_DATASOURCE_USERNAME: nakamap
+      SPRING_DATASOURCE_PASSWORD: password
+
+  frontend:
+    build: ../frontend
+    container_name: nakamap-frontend
+    ports:
+      - "5173:5173"
+    volumes:
+      - ../frontend:/app
+    command: npm run dev -- --host
+
+volumes:
+  db_data:

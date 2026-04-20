@@ -5,6 +5,7 @@ import ProfilePanel from '../components/ProfilePanel';
 import MenuPanel from '../components/MenuPanel';
 import { getLocations } from '../api/locations';
 import { getMyLocation } from '../api/locations';
+import { getCircleDetail } from '../api/circles';
 import { getProfile } from '../api/profiles';
 import type { LocationPin, Profile } from '../types';
 import useAuthStore from '../store/authStore';
@@ -18,6 +19,8 @@ export default function MapPage() {
   const [selectedProfile, setSelectedProfile] = useState<Profile | null>(null);
   const [showProfile, setShowProfile] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
+  const [showJoinCode, setShowJoinCode] = useState(false);
+  const [joinCode, setJoinCode] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
   const id = Number(circleId);
@@ -43,6 +46,8 @@ export default function MapPage() {
           navigate(`/circles/${id}/profile/setup`);
           return;
         }
+        const detail = await getCircleDetail(id);
+        setJoinCode(detail.joinCode);
         await loadPins();
       } catch {
         navigate(`/circles/${id}/profile/setup`);
@@ -122,6 +127,31 @@ export default function MapPage() {
           ☰
         </button>
 
+{/* 招待コードボタン（adminのみ） */}
+        {joinCode && (
+          <button
+            onClick={() => { setShowJoinCode(true); setShowMenu(false); setShowProfile(false); }}
+            style={{
+              background: 'white',
+              border: 'none',
+              borderRadius: '10px',
+              width: '44px',
+              height: '44px',
+              fontSize: '18px',
+              cursor: 'pointer',
+              boxShadow: '0 2px 10px rgba(0,0,0,0.15)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              marginLeft: '8px',
+              pointerEvents: 'all',
+            }}
+            title="招待コードを確認"
+          >
+            🔑
+          </button>
+        )}
+
 {/* 自分のピンクリック用ボタン */}
         {myUserId && (
           <button
@@ -172,6 +202,66 @@ export default function MapPage() {
       >
         🔄
       </button>
+
+      {/* 招待コードモーダル */}
+      {showJoinCode && joinCode && (
+        <>
+          <div
+            onClick={() => setShowJoinCode(false)}
+            style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.3)', zIndex: 999 }}
+          />
+          <div
+            style={{
+              position: 'fixed',
+              top: '50%',
+              left: '50%',
+              transform: 'translate(-50%, -50%)',
+              background: 'white',
+              borderRadius: '16px',
+              padding: '28px 32px',
+              zIndex: 1000,
+              textAlign: 'center',
+              boxShadow: '0 8px 32px rgba(0,0,0,0.2)',
+              minWidth: '260px',
+            }}
+          >
+            <p style={{ margin: '0 0 8px', fontSize: '14px', color: '#888' }}>招待コード</p>
+            <p style={{ margin: '0 0 20px', fontSize: '32px', fontWeight: 700, letterSpacing: '6px', color: '#4A90E2' }}>
+              {joinCode}
+            </p>
+            <button
+              onClick={() => { navigator.clipboard.writeText(joinCode); }}
+              style={{
+                padding: '10px 24px',
+                background: '#4A90E2',
+                color: 'white',
+                border: 'none',
+                borderRadius: '8px',
+                fontSize: '14px',
+                fontWeight: 600,
+                cursor: 'pointer',
+                marginRight: '8px',
+              }}
+            >
+              コピー
+            </button>
+            <button
+              onClick={() => setShowJoinCode(false)}
+              style={{
+                padding: '10px 24px',
+                background: 'white',
+                color: '#666',
+                border: '1px solid #ddd',
+                borderRadius: '8px',
+                fontSize: '14px',
+                cursor: 'pointer',
+              }}
+            >
+              閉じる
+            </button>
+          </div>
+        </>
+      )}
 
       {/* オーバーレイ */}
       {(showProfile || showMenu) && (

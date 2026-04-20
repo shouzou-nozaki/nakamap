@@ -1,4 +1,5 @@
-import { MapContainer, TileLayer, Marker, Tooltip, useMapEvents } from 'react-leaflet';
+import { useState, useRef, useEffect } from 'react';
+import { MapContainer, TileLayer, Marker, Tooltip, useMapEvents, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import type { LocationPin } from '../types';
 
@@ -45,6 +46,84 @@ function ClickHandler({ onClick }: ClickHandlerProps) {
   return null;
 }
 
+function SearchBox({ onSelect }: { onSelect: (lat: number, lng: number) => void }) {
+  const map = useMap();
+  const [query, setQuery] = useState('');
+  const [error, setError] = useState('');
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (containerRef.current) {
+      L.DomEvent.disableClickPropagation(containerRef.current);
+    }
+  }, []);
+
+  const handleSearch = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (!query.trim()) return;
+    setError('');
+    try {
+      const res = await fetch(
+        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=1`,
+        { headers: { 'Accept-Language': 'ja' } }
+      );
+      const data = await res.json();
+      if (data.length === 0) {
+        setError('場所が見つかりませんでした');
+        return;
+      }
+      const lat = parseFloat(data[0].lat);
+      const lon = parseFloat(data[0].lon);
+      map.flyTo([lat, lon], 13);
+      onSelect(lat, lon);
+    } catch {
+      setError('検索に失敗しました');
+    }
+  };
+
+  return (
+    <div ref={containerRef} style={{ position: 'absolute', top: '10px', left: '50%', transform: 'translateX(-50%)', zIndex: 1000, width: 'min(320px, 80vw)' }}>
+      <form onSubmit={handleSearch} style={{ display: 'flex', gap: '4px' }}>
+        <input
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder="住所・地名で検索"
+          style={{
+            flex: 1,
+            padding: '8px 12px',
+            border: '1.5px solid #ddd',
+            borderRadius: '8px',
+            fontSize: '14px',
+            outline: 'none',
+            boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
+          }}
+        />
+        <button
+          type="submit"
+          style={{
+            padding: '8px 14px',
+            background: '#4A90E2',
+            color: 'white',
+            border: 'none',
+            borderRadius: '8px',
+            fontSize: '14px',
+            cursor: 'pointer',
+            boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
+            whiteSpace: 'nowrap',
+          }}
+        >
+          🔍
+        </button>
+      </form>
+      {error && (
+        <p style={{ margin: '4px 0 0', fontSize: '12px', color: '#e74c3c', background: 'white', padding: '4px 8px', borderRadius: '6px', boxShadow: '0 1px 4px rgba(0,0,0,0.1)' }}>
+          {error}
+        </p>
+      )}
+    </div>
+  );
+}
+
 interface MapViewProps {
   pins?: LocationPin[];
   onPinClick?: (userId: number) => void;
@@ -77,6 +156,7 @@ export default function MapView({
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
       />
       <ClickHandler onClick={onMapClick} />
+      {onMapClick && <SearchBox onSelect={onMapClick} />}
       {pins.map((pin) => (
         <Marker
           key={pin.userId}

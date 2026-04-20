@@ -65,7 +65,8 @@ public class CircleService {
                 .orElseThrow(() -> new UnauthorizedException("User not found"));
 
         Circle circle = circleRepository.findByJoinCode(request.getJoinCode())
-                .orElseThrow(() -> new ResourceNotFoundException("Circle not found with join code: " + request.getJoinCode()));
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Circle not found with join code: " + request.getJoinCode()));
 
         if (membershipRepository.existsByUserIdAndCircleId(user.getUserId(), circle.getCircleId())) {
             throw new DuplicateResourceException("Already a member of this circle");
@@ -89,17 +90,19 @@ public class CircleService {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UnauthorizedException("User not found"));
 
-        if (!membershipRepository.existsByUserIdAndCircleId(user.getUserId(), circleId)) {
-            throw new ForbiddenException("You are not a member of this circle");
-        }
+        Membership membership = membershipRepository.findByUserIdAndCircleId(user.getUserId(), circleId)
+                .orElseThrow(() -> new ForbiddenException("You are not a member of this circle"));
 
         Circle circle = circleRepository.findById(circleId)
                 .orElseThrow(() -> new ResourceNotFoundException("Circle not found: " + circleId));
+
+        String joinCode = "admin".equals(membership.getRole()) ? circle.getJoinCode() : null;
 
         return CircleDetailResponse.builder()
                 .circleId(circle.getCircleId())
                 .name(circle.getName())
                 .createdAt(circle.getCreatedAt())
+                .joinCode(joinCode)
                 .build();
     }
 

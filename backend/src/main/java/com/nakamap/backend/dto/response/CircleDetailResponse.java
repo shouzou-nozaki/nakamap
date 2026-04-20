@@ -13,4 +13,5 @@ public class CircleDetailResponse {
     private Long circleId;
     private String name;
     private LocalDateTime createdAt;
+    private String joinCode;
 }

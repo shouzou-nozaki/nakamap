@@ -16,6 +16,7 @@ export interface CircleDetail {
   circleId: number;
   name: string;
   createdAt: string;
+  joinCode: string | null;
 }
 
 export interface LocationPin {

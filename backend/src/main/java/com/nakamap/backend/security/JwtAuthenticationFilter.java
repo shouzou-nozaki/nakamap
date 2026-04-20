@@ -29,9 +29,15 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
-        try {
-            String token = extractTokenFromRequest(request);
-            if (StringUtils.hasText(token) && jwtTokenProvider.validateToken(token)) {
+        String token = extractTokenFromRequest(request);
+        if (StringUtils.hasText(token)) {
+            if (!jwtTokenProvider.validateToken(token)) {
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                response.setContentType("application/json");
+                response.getWriter().write("{\"error\":\"Token expired or invalid\"}");
+                return;
+            }
+            try {
                 String email = jwtTokenProvider.getEmailFromToken(token);
                 UserDetails userDetails = userDetailsService.loadUserByUsername(email);
 
@@ -42,9 +48,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                                 userDetails.getAuthorities());
                 authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                 SecurityContextHolder.getContext().setAuthentication(authentication);
+            } catch (Exception e) {
+                log.debug("Could not set user authentication: {}", e.getMessage());
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                response.setContentType("application/json");
+                response.getWriter().write("{\"error\":\"Authentication failed\"}");
+                return;
             }
-        } catch (Exception e) {
-            log.debug("Could not set user authentication: {}", e.getMessage());
         }
 
         filterChain.doFilter(request, response);

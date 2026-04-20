@@ -53,4 +53,12 @@ public class CircleController {
         List<CircleListItemResponse> response = circleService.getMyCircles(userDetails.getUsername());
         return ResponseEntity.ok(response);
     }
+
+    @DeleteMapping("/{circleId}")
+    public ResponseEntity<Void> deleteCircle(
+            @AuthenticationPrincipal UserDetails userDetails,
+            @PathVariable Long circleId) {
+        circleService.deleteCircle(userDetails.getUsername(), circleId);
+        return ResponseEntity.noContent().build();
+    }
 }

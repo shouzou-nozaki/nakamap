@@ -9,4 +9,5 @@ import java.util.Optional;
 public interface LocationRepository extends JpaRepository<Location, Long> {
     List<Location> findByCircleId(Long circleId);
     Optional<Location> findByUserIdAndCircleId(Long userId, Long circleId);
+    void deleteByCircleId(Long circleId);
 }

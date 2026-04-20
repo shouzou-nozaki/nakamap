@@ -3,9 +3,10 @@ import useAuthStore from '../store/authStore';
 
 interface MenuPanelProps {
   onClose: () => void;
+  onDeleteCircle?: () => void;
 }
 
-export default function MenuPanel({ onClose }: MenuPanelProps) {
+export default function MenuPanel({ onClose, onDeleteCircle }: MenuPanelProps) {
   const navigate = useNavigate();
   const { clearAuth, name, photoUrl } = useAuthStore();
 
@@ -135,6 +136,20 @@ export default function MenuPanel({ onClose }: MenuPanelProps) {
           <span style={{ fontSize: '20px' }}>🔗</span>
           サークルに参加
         </button>
+
+        <div style={{ borderTop: '1px solid #eee', margin: '12px 0' }} />
+
+        {onDeleteCircle && (
+          <button
+            style={{ ...menuItemStyle, color: '#e74c3c' }}
+            onClick={() => { onDeleteCircle(); onClose(); }}
+            onMouseEnter={(e) => (e.currentTarget.style.background = '#fff5f5')}
+            onMouseLeave={(e) => (e.currentTarget.style.background = 'none')}
+          >
+            <span style={{ fontSize: '20px' }}>🗑️</span>
+            サークルを削除
+          </button>
+        )}
 
         <div style={{ borderTop: '1px solid #eee', margin: '12px 0' }} />
 

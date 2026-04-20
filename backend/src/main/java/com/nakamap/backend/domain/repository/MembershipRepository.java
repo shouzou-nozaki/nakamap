@@ -11,4 +11,5 @@ public interface MembershipRepository extends JpaRepository<Membership, Long> {
     List<Membership> findByUserId(Long userId);
     boolean existsByUserIdAndCircleId(Long userId, Long circleId);
     long countByCircleId(Long circleId);
+    void deleteByCircleId(Long circleId);
 }

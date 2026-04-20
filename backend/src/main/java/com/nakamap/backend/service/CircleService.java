@@ -4,7 +4,9 @@ import com.nakamap.backend.domain.entity.Circle;
 import com.nakamap.backend.domain.entity.Membership;
 import com.nakamap.backend.domain.entity.User;
 import com.nakamap.backend.domain.repository.CircleRepository;
+import com.nakamap.backend.domain.repository.LocationRepository;
 import com.nakamap.backend.domain.repository.MembershipRepository;
+import com.nakamap.backend.domain.repository.ProfileRepository;
 import com.nakamap.backend.domain.repository.UserRepository;
 import com.nakamap.backend.dto.request.CreateCircleRequest;
 import com.nakamap.backend.dto.request.JoinCircleRequest;
@@ -30,6 +32,8 @@ public class CircleService {
     private final CircleRepository circleRepository;
     private final MembershipRepository membershipRepository;
     private final UserRepository userRepository;
+    private final LocationRepository locationRepository;
+    private final ProfileRepository profileRepository;
 
     @Transactional
     public CircleResponse create(String email, CreateCircleRequest request) {
@@ -125,5 +129,26 @@ public class CircleService {
                     .memberCount(memberCount)
                     .build();
         }).collect(Collectors.toList());
+    }
+
+    @Transactional
+    public void deleteCircle(String email, Long circleId) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new UnauthorizedException("User not found"));
+
+        Membership membership = membershipRepository.findByUserIdAndCircleId(user.getUserId(), circleId)
+                .orElseThrow(() -> new ForbiddenException("You are not a member of this circle"));
+
+        if (!"admin".equals(membership.getRole())) {
+            throw new ForbiddenException("Only admin can delete this circle");
+        }
+
+        circleRepository.findById(circleId)
+                .orElseThrow(() -> new ResourceNotFoundException("Circle not found: " + circleId));
+
+        locationRepository.deleteByCircleId(circleId);
+        profileRepository.deleteByCircleId(circleId);
+        membershipRepository.deleteByCircleId(circleId);
+        circleRepository.deleteById(circleId);
     }
 }

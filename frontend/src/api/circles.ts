@@ -20,3 +20,7 @@ export const getCircleDetail = async (circleId: number): Promise<CircleDetail> =
   const response = await apiClient.get<CircleDetail>(`/circles/${circleId}`);
   return response.data;
 };
+
+export const deleteCircle = async (circleId: number): Promise<void> => {
+  await apiClient.delete(`/circles/${circleId}`);
+};

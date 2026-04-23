@@ -140,7 +140,10 @@ export default function MapPage() {
           zIndex: 500,
           display: 'flex',
           alignItems: 'center',
-          padding: '12px 16px',
+          paddingTop: 'calc(12px + env(safe-area-inset-top))',
+          paddingBottom: '12px',
+          paddingLeft: '16px',
+          paddingRight: '16px',
           pointerEvents: 'none',
         }}
       >
@@ -222,8 +225,8 @@ export default function MapPage() {
         onClick={loadPins}
         style={{
           position: 'absolute',
-          bottom: '24px',
-          right: '16px',
+          bottom: 'calc(24px + env(safe-area-inset-bottom))',
+          right: 'calc(16px + env(safe-area-inset-right))',
           zIndex: 500,
           background: 'white',
           border: 'none',

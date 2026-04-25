@@ -4,11 +4,12 @@ import useAuthStore from '../store/authStore';
 interface MenuPanelProps {
   onClose: () => void;
   onDeleteCircle?: () => void;
+  circleName?: string;
 }
 
-export default function MenuPanel({ onClose, onDeleteCircle }: MenuPanelProps) {
+export default function MenuPanel({ onClose, onDeleteCircle, circleName }: MenuPanelProps) {
   const navigate = useNavigate();
-  const { clearAuth, name, photoUrl } = useAuthStore();
+  const { clearAuth } = useAuthStore();
 
   const handleLogout = () => {
     clearAuth();
@@ -48,7 +49,7 @@ export default function MenuPanel({ onClose, onDeleteCircle }: MenuPanelProps) {
         animation: 'slideInLeft 0.25s ease',
       }}
     >
-      {/* ヘッダー: ユーザー情報 */}
+      {/* ヘッダー: ロゴ＋サークル名 */}
       <div
         style={{
           background: 'linear-gradient(135deg, #4A90E2, #357abd)',
@@ -57,31 +58,24 @@ export default function MenuPanel({ onClose, onDeleteCircle }: MenuPanelProps) {
         }}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-          {photoUrl ? (
-            <img
-              src={photoUrl}
-              alt={name || ''}
-              style={{ width: '50px', height: '50px', borderRadius: '50%', objectFit: 'cover', border: '2px solid rgba(255,255,255,0.6)' }}
-            />
-          ) : (
-            <div
-              style={{
-                width: '50px',
-                height: '50px',
-                borderRadius: '50%',
-                backgroundColor: 'rgba(255,255,255,0.3)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontSize: '22px',
-                fontWeight: 'bold',
-              }}
-            >
-              {name?.charAt(0).toUpperCase() || '?'}
-            </div>
-          )}
+          <div
+            style={{
+              width: '50px',
+              height: '50px',
+              borderRadius: '12px',
+              backgroundColor: 'rgba(255,255,255,0.25)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: '28px',
+              flexShrink: 0,
+            }}
+          >
+            🗺️
+          </div>
           <div>
-            <p style={{ margin: 0, fontSize: '17px', fontWeight: 700 }}>{name || 'ゲスト'}</p>
+            <p style={{ margin: '0 0 2px', fontSize: '12px', opacity: 0.8 }}>なかまっぷ</p>
+            <p style={{ margin: 0, fontSize: '17px', fontWeight: 700 }}>{circleName || ''}</p>
           </div>
         </div>
         <button

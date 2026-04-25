@@ -323,6 +323,7 @@ export default function MapPage() {
         <MenuPanel
           onClose={() => setShowMenu(false)}
           onDeleteCircle={joinCode !== null ? () => { setShowMenu(false); setShowDeleteModal(true); } : undefined}
+          circleName={circleName}
         />
       )}
 

@@ -223,11 +223,6 @@ export default function ProfileEditPage() {
             <p style={{ margin: 0, fontSize: '14px', color: '#555' }}>
               地図をクリックして居住地を変更してください
             </p>
-            {selectedLat !== null && (
-              <p style={{ margin: '4px 0 0', fontSize: '12px', color: '#4A90E2', fontWeight: 600 }}>
-                現在の位置: ({selectedLat.toFixed(4)}, {selectedLng!.toFixed(4)})
-              </p>
-            )}
           </div>
 
           <div style={{ flex: 1 }}>

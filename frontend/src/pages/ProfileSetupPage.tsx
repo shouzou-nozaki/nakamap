@@ -188,7 +188,7 @@ export default function ProfileSetupPage() {
             </p>
             {selectedLat !== null && (
               <p style={{ margin: '4px 0 0', fontSize: '12px', color: '#4A90E2', fontWeight: 600 }}>
-                ✓ 位置を選択しました ({selectedLat.toFixed(4)}, {selectedLng!.toFixed(4)})
+                ✓ 位置を選択しました
               </p>
             )}
           </div>

@@ -10,6 +10,7 @@ import com.nakamap.backend.domain.repository.ProfileRepository;
 import com.nakamap.backend.domain.repository.UserRepository;
 import com.nakamap.backend.dto.request.CreateCircleRequest;
 import com.nakamap.backend.dto.request.JoinCircleRequest;
+import com.nakamap.backend.dto.request.UpdateCircleRequest;
 import com.nakamap.backend.dto.response.CircleDetailResponse;
 import com.nakamap.backend.dto.response.CircleListItemResponse;
 import com.nakamap.backend.dto.response.CircleResponse;
@@ -129,6 +130,32 @@ public class CircleService {
                     .memberCount(memberCount)
                     .build();
         }).collect(Collectors.toList());
+    }
+
+    @Transactional
+    public CircleDetailResponse updateName(String email, Long circleId, UpdateCircleRequest request) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new UnauthorizedException("User not found"));
+
+        Membership membership = membershipRepository.findByUserIdAndCircleId(user.getUserId(), circleId)
+                .orElseThrow(() -> new ForbiddenException("You are not a member of this circle"));
+
+        if (!"admin".equals(membership.getRole())) {
+            throw new ForbiddenException("Only admin can update this circle");
+        }
+
+        Circle circle = circleRepository.findById(circleId)
+                .orElseThrow(() -> new ResourceNotFoundException("Circle not found: " + circleId));
+
+        circle.setName(request.getName());
+        circleRepository.save(circle);
+
+        return CircleDetailResponse.builder()
+                .circleId(circle.getCircleId())
+                .name(circle.getName())
+                .createdAt(circle.getCreatedAt())
+                .joinCode(circle.getJoinCode())
+                .build();
     }
 
     @Transactional

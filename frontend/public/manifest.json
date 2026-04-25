@@ -1,0 +1,21 @@
+{
+  "name": "なかまっぷ",
+  "short_name": "なかまっぷ",
+  "description": "仲間とつながる地図アプリ",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#4A90E2",
+  "icons": [
+    {
+      "src": "/nakamap-logo.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/nakamap-logo.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

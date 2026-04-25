@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import useAuthStore from '../store/authStore';
 import type { Profile } from '../types';
@@ -11,10 +12,39 @@ export default function ProfilePanel({ profile, onClose }: ProfilePanelProps) {
   const navigate = useNavigate();
   const { circleId } = useParams<{ circleId: string }>();
   const { userId: myUserId } = useAuthStore();
+  const [isImageExpanded, setIsImageExpanded] = useState(false);
 
   const isMe = profile?.userId === myUserId;
 
   return (
+    <>
+    {isImageExpanded && profile?.photoUrl && (
+      <div
+        onClick={() => setIsImageExpanded(false)}
+        style={{
+          position: 'fixed',
+          inset: 0,
+          backgroundColor: 'rgba(0,0,0,0.8)',
+          zIndex: 2000,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          cursor: 'zoom-out',
+        }}
+      >
+        <img
+          src={profile.photoUrl}
+          alt={profile.name}
+          style={{
+            maxWidth: '80vw',
+            maxHeight: '80vh',
+            borderRadius: '12px',
+            objectFit: 'contain',
+            boxShadow: '0 8px 32px rgba(0,0,0,0.5)',
+          }}
+        />
+      </div>
+    )}
     <div
       style={{
         position: 'fixed',
@@ -62,6 +92,7 @@ export default function ProfilePanel({ profile, onClose }: ProfilePanelProps) {
               <img
                 src={profile.photoUrl}
                 alt={profile.name}
+                onClick={() => setIsImageExpanded(true)}
                 style={{
                   width: '80px',
                   height: '80px',
@@ -69,6 +100,7 @@ export default function ProfilePanel({ profile, onClose }: ProfilePanelProps) {
                   objectFit: 'cover',
                   border: '3px solid #4A90E2',
                   marginBottom: '12px',
+                  cursor: 'zoom-in',
                 }}
               />
             ) : (
@@ -137,5 +169,6 @@ export default function ProfilePanel({ profile, onClose }: ProfilePanelProps) {
         </div>
       )}
     </div>
+    </>
   );
 }

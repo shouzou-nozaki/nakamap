@@ -202,7 +202,7 @@ export default function ProfileSetupPage() {
             />
           </div>
 
-          <div style={{ background: 'white', padding: '12px 16px', borderTop: '1px solid #eee', display: 'flex', gap: '8px' }}>
+          <div style={{ background: 'white', padding: '12px 16px', paddingBottom: 'calc(12px + env(safe-area-inset-bottom))', borderTop: '1px solid #eee', display: 'flex', gap: '8px' }}>
             <button
               onClick={() => { setStep('info'); setError(''); }}
               style={{

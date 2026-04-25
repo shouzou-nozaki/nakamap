@@ -149,11 +149,15 @@ export default function MapView({
     <MapContainer
       center={center}
       zoom={zoom}
+      minZoom={5}
+      maxBounds={[[20, 122], [46, 154]]}
+      maxBoundsViscosity={1.0}
       style={{ width: '100%', height: '100%', ...style }}
     >
       <TileLayer
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+        noWrap={true}
       />
       <ClickHandler onClick={onMapClick} />
       {onMapClick && <SearchBox onSelect={onMapClick} />}

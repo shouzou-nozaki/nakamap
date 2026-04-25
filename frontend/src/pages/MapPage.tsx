@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import MapView from '../components/MapView';
 import ProfilePanel from '../components/ProfilePanel';
 import MenuPanel from '../components/MenuPanel';
+import MemberListPanel from '../components/MemberListPanel';
 import { getLocations } from '../api/locations';
 import { getMyLocation } from '../api/locations';
 import { getCircleDetail, deleteCircle } from '../api/circles';
@@ -22,6 +23,7 @@ export default function MapPage() {
   const [showJoinCode, setShowJoinCode] = useState(false);
   const [joinCode, setJoinCode] = useState<string | null>(null);
   const [circleName, setCircleName] = useState('');
+  const [showMemberList, setShowMemberList] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deleteInput, setDeleteInput] = useState('');
   const [deleteLoading, setDeleteLoading] = useState(false);
@@ -194,10 +196,31 @@ export default function MapPage() {
           </button>
         )}
 
-{/* 自分のピンクリック用ボタン */}
-        {myUserId && (
+        {/* 右側ボタン群（縦並び） */}
+        <div style={{ marginLeft: 'auto', display: 'flex', flexDirection: 'column', gap: '8px', pointerEvents: 'all' }}>
+          {myUserId && (
+            <button
+              onClick={() => { handlePinClick(myUserId); setShowMemberList(false); }}
+              style={{
+                background: 'white',
+                border: 'none',
+                borderRadius: '10px',
+                width: '44px',
+                height: '44px',
+                fontSize: '18px',
+                cursor: 'pointer',
+                boxShadow: '0 2px 10px rgba(0,0,0,0.15)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+              title="自分のプロフィール"
+            >
+              👤
+            </button>
+          )}
           <button
-            onClick={() => handlePinClick(myUserId)}
+            onClick={() => { setShowMemberList(true); setShowProfile(false); setShowMenu(false); }}
             style={{
               background: 'white',
               border: 'none',
@@ -210,14 +233,12 @@ export default function MapPage() {
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              marginLeft: 'auto',
-              pointerEvents: 'all',
             }}
-            title="自分のプロフィール"
+            title="メンバー一覧"
           >
-            👤
+            👥
           </button>
-        )}
+        </div>
       </div>
 
       {/* 再読み込みボタン */}
@@ -306,9 +327,9 @@ export default function MapPage() {
       )}
 
       {/* オーバーレイ */}
-      {(showProfile || showMenu) && (
+      {(showProfile || showMenu || showMemberList) && (
         <div
-          onClick={() => { setShowProfile(false); setShowMenu(false); }}
+          onClick={() => { setShowProfile(false); setShowMenu(false); setShowMemberList(false); }}
           style={{
             position: 'fixed',
             inset: 0,
@@ -375,6 +396,16 @@ export default function MapPage() {
             </div>
           </div>
         </>
+      )}
+
+      {/* メンバー一覧パネル */}
+      {showMemberList && (
+        <MemberListPanel
+          pins={pins}
+          myUserId={myUserId ?? undefined}
+          onMemberClick={(userId) => { handlePinClick(userId); setShowMemberList(false); }}
+          onClose={() => setShowMemberList(false)}
+        />
       )}
 
       {/* プロフィールパネル */}

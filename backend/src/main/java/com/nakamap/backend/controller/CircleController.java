@@ -2,6 +2,7 @@ package com.nakamap.backend.controller;
 
 import com.nakamap.backend.dto.request.CreateCircleRequest;
 import com.nakamap.backend.dto.request.JoinCircleRequest;
+import com.nakamap.backend.dto.request.UpdateCircleRequest;
 import com.nakamap.backend.dto.response.CircleDetailResponse;
 import com.nakamap.backend.dto.response.CircleListItemResponse;
 import com.nakamap.backend.dto.response.CircleResponse;
@@ -51,6 +52,15 @@ public class CircleController {
     public ResponseEntity<List<CircleListItemResponse>> getMyCircles(
             @AuthenticationPrincipal UserDetails userDetails) {
         List<CircleListItemResponse> response = circleService.getMyCircles(userDetails.getUsername());
+        return ResponseEntity.ok(response);
+    }
+
+    @PatchMapping("/{circleId}")
+    public ResponseEntity<CircleDetailResponse> updateName(
+            @AuthenticationPrincipal UserDetails userDetails,
+            @PathVariable Long circleId,
+            @Valid @RequestBody UpdateCircleRequest request) {
+        CircleDetailResponse response = circleService.updateName(userDetails.getUsername(), circleId, request);
         return ResponseEntity.ok(response);
     }
 

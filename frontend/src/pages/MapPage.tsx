@@ -6,7 +6,7 @@ import MenuPanel from '../components/MenuPanel';
 import MemberListPanel from '../components/MemberListPanel';
 import { getLocations } from '../api/locations';
 import { getMyLocation } from '../api/locations';
-import { getCircleDetail, deleteCircle } from '../api/circles';
+import { getCircleDetail, deleteCircle, updateCircleName } from '../api/circles';
 import { getProfile } from '../api/profiles';
 import type { LocationPin, Profile } from '../types';
 import useAuthStore from '../store/authStore';
@@ -349,6 +349,11 @@ export default function MapPage() {
           onClose={() => setShowMenu(false)}
           onDeleteCircle={joinCode !== null ? () => { setShowMenu(false); setShowDeleteModal(true); } : undefined}
           circleName={circleName}
+          isAdmin={joinCode !== null}
+          onCircleNameUpdate={async (newName) => {
+            await updateCircleName(id, newName);
+            setCircleName(newName);
+          }}
         />
       )}
 

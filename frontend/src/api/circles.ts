@@ -21,6 +21,10 @@ export const getCircleDetail = async (circleId: number): Promise<CircleDetail> =
   return response.data;
 };
 
+export const updateCircleName = async (circleId: number, name: string): Promise<void> => {
+  await apiClient.patch(`/circles/${circleId}`, { name });
+};
+
 export const deleteCircle = async (circleId: number): Promise<void> => {
   await apiClient.delete(`/circles/${circleId}`);
 };

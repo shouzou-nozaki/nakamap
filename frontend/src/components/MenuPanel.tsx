@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import useAuthStore from '../store/authStore';
 import nakamapLogo from '../assets/nakamap-logo.png';
@@ -6,15 +7,36 @@ interface MenuPanelProps {
   onClose: () => void;
   onDeleteCircle?: () => void;
   circleName?: string;
+  isAdmin?: boolean;
+  onCircleNameUpdate?: (newName: string) => Promise<void>;
 }
 
-export default function MenuPanel({ onClose, onDeleteCircle, circleName }: MenuPanelProps) {
+export default function MenuPanel({ onClose, onDeleteCircle, circleName, isAdmin, onCircleNameUpdate }: MenuPanelProps) {
   const navigate = useNavigate();
   const { clearAuth } = useAuthStore();
+  const [editing, setEditing] = useState(false);
+  const [editName, setEditName] = useState('');
+  const [saving, setSaving] = useState(false);
 
   const handleLogout = () => {
     clearAuth();
     navigate('/login');
+  };
+
+  const handleEditStart = () => {
+    setEditName(circleName || '');
+    setEditing(true);
+  };
+
+  const handleSave = async () => {
+    if (!editName.trim() || !onCircleNameUpdate) return;
+    setSaving(true);
+    try {
+      await onCircleNameUpdate(editName.trim());
+      setEditing(false);
+    } finally {
+      setSaving(false);
+    }
   };
 
   const menuItemStyle: React.CSSProperties = {
@@ -70,9 +92,86 @@ export default function MenuPanel({ onClose, onDeleteCircle, circleName }: MenuP
               flexShrink: 0,
             }}
           />
-          <div>
+          <div style={{ flex: 1, minWidth: 0 }}>
             <p style={{ margin: '0 0 2px', fontSize: '12px', opacity: 0.8 }}>なかまっぷ</p>
-            <p style={{ margin: 0, fontSize: '17px', fontWeight: 700 }}>{circleName || ''}</p>
+            {editing ? (
+              <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+                <input
+                  value={editName}
+                  onChange={(e) => setEditName(e.target.value)}
+                  onKeyDown={(e) => { if (e.key === 'Enter') handleSave(); if (e.key === 'Escape') setEditing(false); }}
+                  autoFocus
+                  style={{
+                    flex: 1,
+                    fontSize: '15px',
+                    fontWeight: 700,
+                    background: 'rgba(255,255,255,0.2)',
+                    border: '1px solid rgba(255,255,255,0.5)',
+                    borderRadius: '6px',
+                    color: 'white',
+                    padding: '4px 8px',
+                    outline: 'none',
+                    minWidth: 0,
+                  }}
+                />
+                <button
+                  onClick={handleSave}
+                  disabled={saving || !editName.trim()}
+                  style={{
+                    background: 'rgba(255,255,255,0.25)',
+                    border: 'none',
+                    borderRadius: '6px',
+                    color: 'white',
+                    cursor: saving ? 'default' : 'pointer',
+                    padding: '4px 8px',
+                    fontSize: '13px',
+                    fontWeight: 600,
+                    flexShrink: 0,
+                  }}
+                >
+                  {saving ? '…' : '保存'}
+                </button>
+                <button
+                  onClick={() => setEditing(false)}
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    color: 'rgba(255,255,255,0.7)',
+                    cursor: 'pointer',
+                    fontSize: '16px',
+                    padding: '4px',
+                    flexShrink: 0,
+                  }}
+                >
+                  ✕
+                </button>
+              </div>
+            ) : (
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <p style={{ margin: 0, fontSize: '17px', fontWeight: 700 }}>{circleName || ''}</p>
+                {isAdmin && (
+                  <button
+                    onClick={handleEditStart}
+                    style={{
+                      background: 'none',
+                      border: 'none',
+                      color: 'rgba(255,255,255,0.75)',
+                      cursor: 'pointer',
+                      padding: '2px',
+                      lineHeight: 1,
+                      display: 'flex',
+                      alignItems: 'center',
+                    }}
+                    title="サークル名を変更"
+                  >
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                      <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+                    </svg>
+                  </button>
+                )}
+              </div>
+            )}
           </div>
         </div>
         <button

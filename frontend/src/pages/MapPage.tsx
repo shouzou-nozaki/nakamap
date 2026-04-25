@@ -30,6 +30,7 @@ export default function MapPage() {
   const [circleDeleted, setCircleDeleted] = useState(false);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [initialCenter, setInitialCenter] = useState<[number, number] | undefined>(undefined);
 
   const id = Number(circleId);
 
@@ -57,6 +58,7 @@ export default function MapPage() {
           navigate(`/circles/${id}/profile/setup`);
           return;
         }
+        setInitialCenter([myLoc.displayLatitude, myLoc.displayLongitude]);
         const detail = await getCircleDetail(id);
         setJoinCode(detail.joinCode);
         setCircleName(detail.name);
@@ -132,6 +134,7 @@ export default function MapPage() {
         <MapView
           pins={pins}
           onPinClick={handlePinClick}
+          center={initialCenter}
           style={{ height: '100vh' }}
         />
       </div>

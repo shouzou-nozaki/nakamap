@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import nakamapLogo from '../assets/nakamap-logo.png';
 import { login, register } from '../api/auth';
 import useAuthStore from '../store/authStore';
 
@@ -59,7 +60,7 @@ export default function LoginPage() {
       >
         {/* ロゴ */}
         <div style={{ textAlign: 'center', marginBottom: '32px' }}>
-          <div style={{ fontSize: '40px', marginBottom: '8px' }}>🗺️</div>
+          <img src={nakamapLogo} alt="なかまっぷ" style={{ width: '40px', height: '40px', objectFit: 'contain', marginBottom: '8px' }} />
           <h1 style={{ margin: 0, fontSize: '26px', color: '#4A90E2', fontWeight: 700 }}>
             なかまっぷ
           </h1>

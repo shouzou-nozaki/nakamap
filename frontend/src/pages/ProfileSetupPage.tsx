@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import nakamapLogo from '../assets/nakamap-logo.png';
 import MapView from '../components/MapView';
 import PhotoUpload from '../components/PhotoUpload';
 import { registerLocation } from '../api/locations';
@@ -79,7 +80,7 @@ export default function ProfileSetupPage() {
     <div style={{ minHeight: '100vh', background: 'transparent' }}>
       {/* ヘッダー */}
       <div style={{ background: 'white', borderBottom: '1px solid #eee', padding: '14px 20px', display: 'flex', alignItems: 'center', gap: '12px' }}>
-        <div style={{ fontSize: '24px' }}>🗺️</div>
+        <img src={nakamapLogo} alt="なかまっぷ" style={{ width: '24px', height: '24px', objectFit: 'contain' }} />
         <div>
           <h1 style={{ margin: 0, fontSize: '17px', color: '#222', fontWeight: 700 }}>プロフィール設定</h1>
           <p style={{ margin: 0, fontSize: '12px', color: '#888' }}>サークルに参加するための情報を入力してください</p>

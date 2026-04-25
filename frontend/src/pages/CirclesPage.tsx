@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import nakamapLogo from '../assets/nakamap-logo.png';
 import { getCircles } from '../api/circles';
 import type { CircleListItem } from '../types';
 
@@ -31,7 +32,7 @@ export default function CirclesPage() {
         }}
       >
         <h1 style={{ margin: 0, fontSize: '20px', color: '#4A90E2', fontWeight: 700 }}>
-          🗺️ なかまっぷ
+          <img src={nakamapLogo} alt="なかまっぷ" style={{ width: '24px', height: '24px', objectFit: 'contain', verticalAlign: 'middle', marginRight: '8px' }} />なかまっぷ
         </h1>
       </div>
 

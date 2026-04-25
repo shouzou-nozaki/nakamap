@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import useAuthStore from '../store/authStore';
+import nakamapLogo from '../assets/nakamap-logo.png';
 
 interface MenuPanelProps {
   onClose: () => void;
@@ -58,21 +59,17 @@ export default function MenuPanel({ onClose, onDeleteCircle, circleName }: MenuP
         }}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-          <div
+          <img
+            src={nakamapLogo}
+            alt="なかまっぷ"
             style={{
               width: '50px',
               height: '50px',
               borderRadius: '12px',
-              backgroundColor: 'rgba(255,255,255,0.25)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontSize: '28px',
+              objectFit: 'contain',
               flexShrink: 0,
             }}
-          >
-            🗺️
-          </div>
+          />
           <div>
             <p style={{ margin: '0 0 2px', fontSize: '12px', opacity: 0.8 }}>なかまっぷ</p>
             <p style={{ margin: 0, fontSize: '17px', fontWeight: 700 }}>{circleName || ''}</p>

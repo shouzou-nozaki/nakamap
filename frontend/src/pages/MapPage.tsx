@@ -1,6 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import nakamapLogo from '../assets/nakamap-logo.png';
 import MapView from '../components/MapView';
 import ProfilePanel from '../components/ProfilePanel';
 import MenuPanel from '../components/MenuPanel';
@@ -113,7 +112,7 @@ export default function MapPage() {
     return (
       <div style={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'transparent' }}>
         <div style={{ textAlign: 'center', color: '#666' }}>
-          <img src={nakamapLogo} alt="なかまっぷ" style={{ width: '40px', height: '40px', objectFit: 'contain', marginBottom: '16px' }} />
+          <div style={{ fontSize: '40px', marginBottom: '16px' }}>🗺️</div>
           <p>マップを読み込み中...</p>
         </div>
       </div>

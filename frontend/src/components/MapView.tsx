@@ -152,6 +152,7 @@ export default function MapView({
       minZoom={5}
       maxBounds={[[20, 122], [46, 154]]}
       maxBoundsViscosity={1.0}
+      zoomControl={false}
       style={{ width: '100%', height: '100%', ...style }}
     >
       <TileLayer

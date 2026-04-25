@@ -29,16 +29,20 @@ export default function MapPage() {
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [circleDeleted, setCircleDeleted] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
 
   const id = Number(circleId);
 
   const loadPins = useCallback(async () => {
     if (!id) return;
+    setRefreshing(true);
     try {
       const locs = await getLocations(id);
       setPins(locs);
     } catch {
       // エラーは静かに無視
+    } finally {
+      setRefreshing(false);
     }
   }, [id]);
 
@@ -132,31 +136,24 @@ export default function MapPage() {
         />
       </div>
 
-      {/* 上部バー */}
+      {/* 左上ボタン群 */}
       <div
         style={{
           position: 'absolute',
-          top: 0,
-          left: 0,
-          right: 0,
+          top: 'calc(16px + env(safe-area-inset-top))',
+          left: '16px',
           zIndex: 500,
           display: 'flex',
-          alignItems: 'center',
-          paddingTop: 'calc(12px + env(safe-area-inset-top))',
-          paddingBottom: '12px',
-          paddingLeft: '16px',
-          paddingRight: '16px',
-          pointerEvents: 'none',
+          flexDirection: 'column',
+          gap: '8px',
         }}
       >
-        {/* メニューボタン */}
         <button
-          onClick={() => { setShowMenu(true); setShowProfile(false); }}
+          onClick={() => { setShowMenu(true); setShowProfile(false); setShowMemberList(false); }}
           style={{
             background: 'white',
             border: 'none',
             borderRadius: '10px',
-            marginLeft: '54px',
             width: '44px',
             height: '44px',
             fontSize: '20px',
@@ -165,16 +162,14 @@ export default function MapPage() {
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            pointerEvents: 'all',
           }}
+          title="メニュー"
         >
           ☰
         </button>
-
-{/* 招待コードボタン（adminのみ） */}
         {joinCode && (
           <button
-            onClick={() => { setShowJoinCode(true); setShowMenu(false); setShowProfile(false); }}
+            onClick={() => { setShowJoinCode(true); setShowMenu(false); setShowProfile(false); setShowMemberList(false); }}
             style={{
               background: 'white',
               border: 'none',
@@ -187,40 +182,29 @@ export default function MapPage() {
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              marginLeft: '8px',
-              pointerEvents: 'all',
             }}
             title="招待コードを確認"
           >
             🔑
           </button>
         )}
+      </div>
 
-        {/* 右側ボタン群（縦並び） */}
-        <div style={{ marginLeft: 'auto', display: 'flex', flexDirection: 'column', gap: '8px', pointerEvents: 'all' }}>
-          {myUserId && (
-            <button
-              onClick={() => { handlePinClick(myUserId); setShowMemberList(false); }}
-              style={{
-                background: 'white',
-                border: 'none',
-                borderRadius: '10px',
-                width: '44px',
-                height: '44px',
-                fontSize: '18px',
-                cursor: 'pointer',
-                boxShadow: '0 2px 10px rgba(0,0,0,0.15)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
-              title="自分のプロフィール"
-            >
-              👤
-            </button>
-          )}
+      {/* 右上ボタン群 */}
+      <div
+        style={{
+          position: 'absolute',
+          top: 'calc(16px + env(safe-area-inset-top))',
+          right: '16px',
+          zIndex: 500,
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '8px',
+        }}
+      >
+        {myUserId && (
           <button
-            onClick={() => { setShowMemberList(true); setShowProfile(false); setShowMenu(false); }}
+            onClick={() => { handlePinClick(myUserId); setShowMemberList(false); }}
             style={{
               background: 'white',
               border: 'none',
@@ -234,11 +218,30 @@ export default function MapPage() {
               alignItems: 'center',
               justifyContent: 'center',
             }}
-            title="メンバー一覧"
+            title="自分のプロフィール"
           >
-            👥
+            👤
           </button>
-        </div>
+        )}
+        <button
+          onClick={() => { setShowMemberList(true); setShowProfile(false); setShowMenu(false); }}
+          style={{
+            background: 'white',
+            border: 'none',
+            borderRadius: '10px',
+            width: '44px',
+            height: '44px',
+            fontSize: '18px',
+            cursor: 'pointer',
+            boxShadow: '0 2px 10px rgba(0,0,0,0.15)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+          title="メンバー"
+        >
+          👥
+        </button>
       </div>
 
       {/* 再読み込みボタン */}
@@ -255,15 +258,16 @@ export default function MapPage() {
           width: '48px',
           height: '48px',
           fontSize: '20px',
-          cursor: 'pointer',
+          cursor: refreshing ? 'default' : 'pointer',
           boxShadow: '0 2px 10px rgba(0,0,0,0.2)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
         }}
+        disabled={refreshing}
         title="メンバー位置を更新"
       >
-        🔄
+        <span style={{ display: 'inline-block', animation: refreshing ? 'spin 0.8s linear infinite' : 'none' }}>🔄</span>
       </button>
 
       {/* 招待コードモーダル */}

@@ -2,6 +2,7 @@ package com.nakamap.backend.controller;
 
 import com.nakamap.backend.dto.request.CreateCircleRequest;
 import com.nakamap.backend.dto.request.JoinCircleRequest;
+import com.nakamap.backend.dto.request.ToggleStampRequest;
 import com.nakamap.backend.dto.request.UpdateCircleRequest;
 import com.nakamap.backend.dto.response.CircleDetailResponse;
 import com.nakamap.backend.dto.response.CircleListItemResponse;
@@ -61,6 +62,15 @@ public class CircleController {
             @PathVariable Long circleId,
             @Valid @RequestBody UpdateCircleRequest request) {
         CircleDetailResponse response = circleService.updateName(userDetails.getUsername(), circleId, request);
+        return ResponseEntity.ok(response);
+    }
+
+    @PatchMapping("/{circleId}/stamp")
+    public ResponseEntity<CircleDetailResponse> toggleStamp(
+            @AuthenticationPrincipal UserDetails userDetails,
+            @PathVariable Long circleId,
+            @RequestBody ToggleStampRequest request) {
+        CircleDetailResponse response = circleService.toggleStamp(userDetails.getUsername(), circleId, request);
         return ResponseEntity.ok(response);
     }
 

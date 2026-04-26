@@ -17,6 +17,32 @@ export interface CircleDetail {
   name: string;
   createdAt: string;
   joinCode: string | null;
+  stampEnabled: boolean;
+}
+
+export interface EncounterHistory {
+  encounterId: number;
+  partnerUserId: number;
+  partnerName: string;
+  partnerPhotoUrl: string | null;
+  metAt: string;
+  firstMeeting: boolean;
+}
+
+export interface RankingEntry {
+  rank: number;
+  userId: number;
+  name: string;
+  photoUrl: string | null;
+  totalPoints: number;
+}
+
+export interface ScanResult {
+  targetName: string;
+  targetPhotoUrl: string | null;
+  pointsEarned: number;
+  firstMeeting: boolean;
+  allMembersBonus: boolean;
 }
 
 export interface LocationPin {

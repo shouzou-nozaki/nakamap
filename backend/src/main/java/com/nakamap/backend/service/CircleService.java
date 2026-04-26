@@ -4,12 +4,14 @@ import com.nakamap.backend.domain.entity.Circle;
 import com.nakamap.backend.domain.entity.Membership;
 import com.nakamap.backend.domain.entity.User;
 import com.nakamap.backend.domain.repository.CircleRepository;
+import com.nakamap.backend.domain.repository.EncounterRepository;
 import com.nakamap.backend.domain.repository.LocationRepository;
 import com.nakamap.backend.domain.repository.MembershipRepository;
 import com.nakamap.backend.domain.repository.ProfileRepository;
 import com.nakamap.backend.domain.repository.UserRepository;
 import com.nakamap.backend.dto.request.CreateCircleRequest;
 import com.nakamap.backend.dto.request.JoinCircleRequest;
+import com.nakamap.backend.dto.request.ToggleStampRequest;
 import com.nakamap.backend.dto.request.UpdateCircleRequest;
 import com.nakamap.backend.dto.response.CircleDetailResponse;
 import com.nakamap.backend.dto.response.CircleListItemResponse;
@@ -35,6 +37,7 @@ public class CircleService {
     private final UserRepository userRepository;
     private final LocationRepository locationRepository;
     private final ProfileRepository profileRepository;
+    private final EncounterRepository encounterRepository;
 
     @Transactional
     public CircleResponse create(String email, CreateCircleRequest request) {
@@ -108,6 +111,7 @@ public class CircleService {
                 .name(circle.getName())
                 .createdAt(circle.getCreatedAt())
                 .joinCode(joinCode)
+                .stampEnabled(circle.isStampEnabled())
                 .build();
     }
 
@@ -155,6 +159,34 @@ public class CircleService {
                 .name(circle.getName())
                 .createdAt(circle.getCreatedAt())
                 .joinCode(circle.getJoinCode())
+                .stampEnabled(circle.isStampEnabled())
+                .build();
+    }
+
+    @Transactional
+    public CircleDetailResponse toggleStamp(String email, Long circleId, ToggleStampRequest request) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new UnauthorizedException("User not found"));
+
+        Membership membership = membershipRepository.findByUserIdAndCircleId(user.getUserId(), circleId)
+                .orElseThrow(() -> new ForbiddenException("You are not a member of this circle"));
+
+        if (!"admin".equals(membership.getRole())) {
+            throw new ForbiddenException("Only admin can change stamp settings");
+        }
+
+        Circle circle = circleRepository.findById(circleId)
+                .orElseThrow(() -> new ResourceNotFoundException("Circle not found: " + circleId));
+
+        circle.setStampEnabled(request.isEnabled());
+        circleRepository.save(circle);
+
+        return CircleDetailResponse.builder()
+                .circleId(circle.getCircleId())
+                .name(circle.getName())
+                .createdAt(circle.getCreatedAt())
+                .joinCode(circle.getJoinCode())
+                .stampEnabled(circle.isStampEnabled())
                 .build();
     }
 
@@ -173,6 +205,7 @@ public class CircleService {
         circleRepository.findById(circleId)
                 .orElseThrow(() -> new ResourceNotFoundException("Circle not found: " + circleId));
 
+        encounterRepository.deleteByCircleId(circleId);
         locationRepository.deleteByCircleId(circleId);
         profileRepository.deleteByCircleId(circleId);
         membershipRepository.deleteByCircleId(circleId);

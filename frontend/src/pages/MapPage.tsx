@@ -4,6 +4,7 @@ import MapView from '../components/MapView';
 import ProfilePanel from '../components/ProfilePanel';
 import MenuPanel from '../components/MenuPanel';
 import MemberListPanel from '../components/MemberListPanel';
+import StampModal from '../components/StampModal';
 import { getLocations } from '../api/locations';
 import { getMyLocation } from '../api/locations';
 import { getCircleDetail, deleteCircle, updateCircleName } from '../api/circles';
@@ -24,6 +25,8 @@ export default function MapPage() {
   const [joinCode, setJoinCode] = useState<string | null>(null);
   const [circleName, setCircleName] = useState('');
   const [showMemberList, setShowMemberList] = useState(false);
+  const [stampEnabled, setStampEnabled] = useState(false);
+  const [showStampModal, setShowStampModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deleteInput, setDeleteInput] = useState('');
   const [deleteLoading, setDeleteLoading] = useState(false);
@@ -62,6 +65,7 @@ export default function MapPage() {
         const detail = await getCircleDetail(id);
         setJoinCode(detail.joinCode);
         setCircleName(detail.name);
+        setStampEnabled(detail.stampEnabled);
         await loadPins();
       } catch (err: unknown) {
         const status = (err as { response?: { status?: number } })?.response?.status;
@@ -170,6 +174,27 @@ export default function MapPage() {
         >
           ☰
         </button>
+        {stampEnabled && (
+          <button
+            onClick={() => { setShowStampModal(true); setShowMenu(false); setShowProfile(false); setShowMemberList(false); }}
+            style={{
+              background: 'white',
+              border: 'none',
+              borderRadius: '10px',
+              width: '44px',
+              height: '44px',
+              fontSize: '18px',
+              cursor: 'pointer',
+              boxShadow: '0 2px 10px rgba(0,0,0,0.15)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+            title="なかまスタンプ"
+          >
+            🎫
+          </button>
+        )}
         {joinCode && (
           <button
             onClick={() => { setShowJoinCode(true); setShowMenu(false); setShowProfile(false); setShowMemberList(false); }}
@@ -357,6 +382,13 @@ export default function MapPage() {
             await updateCircleName(id, newName);
             setCircleName(newName);
           }}
+          circleId={id}
+          stampEnabled={stampEnabled}
+          onStampToggle={joinCode !== null ? async (enabled) => {
+            const { toggleStamp } = await import('../api/stamps');
+            await toggleStamp(id, enabled);
+            setStampEnabled(enabled);
+          } : undefined}
         />
       )}
 
@@ -425,6 +457,14 @@ export default function MapPage() {
         <ProfilePanel
           profile={selectedProfile}
           onClose={() => { setShowProfile(false); setSelectedProfile(null); }}
+        />
+      )}
+
+      {/* スタンプモーダル */}
+      {showStampModal && (
+        <StampModal
+          circleId={id}
+          onClose={() => setShowStampModal(false)}
         />
       )}
     </div>

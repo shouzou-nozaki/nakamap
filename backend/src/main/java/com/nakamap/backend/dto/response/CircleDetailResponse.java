@@ -14,4 +14,5 @@ public class CircleDetailResponse {
     private String name;
     private LocalDateTime createdAt;
     private String joinCode;
+    private boolean stampEnabled;
 }

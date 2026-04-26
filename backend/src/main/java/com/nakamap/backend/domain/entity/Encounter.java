@@ -6,6 +6,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 
 @Entity
 @Table(name = "encounters")
@@ -29,5 +30,5 @@ public class Encounter {
     private Long targetUserId;
 
     @Column(name = "met_at", nullable = false, updatable = false)
-    private LocalDateTime metAt = LocalDateTime.now();
+    private LocalDateTime metAt = LocalDateTime.now(ZoneId.of("Asia/Tokyo"));
 }

@@ -21,7 +21,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -69,7 +71,7 @@ public class StampService {
         User target = userRepository.findById(claims.userId())
                 .orElseThrow(() -> new ResourceNotFoundException("User not found: " + claims.userId()));
 
-        LocalDateTime startOfToday = LocalDateTime.now().withHour(0).withMinute(0).withSecond(0).withNano(0);
+        LocalDateTime startOfToday = LocalDate.now(ZoneId.of("Asia/Tokyo")).atStartOfDay();
         if (!encounterRepository.findPairEncountersSince(circleId, scanner.getUserId(), target.getUserId(), startOfToday).isEmpty()) {
             throw new DuplicateResourceException("本日はすでにスキャン済みです");
         }
@@ -102,7 +104,7 @@ public class StampService {
         User user = getUser(email);
         requireMember(user.getUserId(), circleId);
 
-        LocalDateTime since = LocalDateTime.now().minusYears(1);
+        LocalDateTime since = LocalDateTime.now(ZoneId.of("Asia/Tokyo")).minusYears(1);
         List<Encounter> encounters = encounterRepository.findByCircleIdAndUserIdSince(circleId, user.getUserId(), since);
 
         Map<Long, User> userCache = new HashMap<>();
@@ -162,7 +164,7 @@ public class StampService {
         User user = getUser(email);
         requireMember(user.getUserId(), circleId);
 
-        LocalDateTime startOfMonth = LocalDateTime.now().withDayOfMonth(1).withHour(0).withMinute(0).withSecond(0).withNano(0);
+        LocalDateTime startOfMonth = LocalDate.now(ZoneId.of("Asia/Tokyo")).withDayOfMonth(1).atStartOfDay();
         List<Encounter> monthlyEncounters = encounterRepository.findByCircleIdSince(circleId, startOfMonth);
 
         List<Long> memberIds = membershipRepository.findByCircleId(circleId).stream()
@@ -219,7 +221,7 @@ public class StampService {
     }
 
     private boolean checkAllMembersBonus(Long userId, Long circleId) {
-        LocalDateTime startOfMonth = LocalDateTime.now().withDayOfMonth(1).withHour(0).withMinute(0).withSecond(0).withNano(0);
+        LocalDateTime startOfMonth = LocalDate.now(ZoneId.of("Asia/Tokyo")).withDayOfMonth(1).atStartOfDay();
         List<Long> otherMembers = membershipRepository.findByCircleId(circleId).stream()
                 .map(m -> m.getUserId())
                 .filter(id -> !id.equals(userId))

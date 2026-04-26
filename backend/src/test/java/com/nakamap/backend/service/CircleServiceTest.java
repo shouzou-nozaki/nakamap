@@ -4,6 +4,7 @@ import com.nakamap.backend.domain.entity.Circle;
 import com.nakamap.backend.domain.entity.Membership;
 import com.nakamap.backend.domain.entity.User;
 import com.nakamap.backend.domain.repository.CircleRepository;
+import com.nakamap.backend.domain.repository.EncounterRepository;
 import com.nakamap.backend.domain.repository.LocationRepository;
 import com.nakamap.backend.domain.repository.MembershipRepository;
 import com.nakamap.backend.domain.repository.ProfileRepository;
@@ -39,6 +40,7 @@ class CircleServiceTest {
     @Mock private UserRepository userRepository;
     @Mock private LocationRepository locationRepository;
     @Mock private ProfileRepository profileRepository;
+    @Mock private EncounterRepository encounterRepository;
 
     @InjectMocks
     private CircleService circleService;
@@ -202,6 +204,7 @@ class CircleServiceTest {
 
         circleService.deleteCircle("admin@example.com", 10L);
 
+        verify(encounterRepository).deleteByCircleId(10L);
         verify(locationRepository).deleteByCircleId(10L);
         verify(profileRepository).deleteByCircleId(10L);
         verify(membershipRepository).deleteByCircleId(10L);

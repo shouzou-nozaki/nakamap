@@ -9,14 +9,18 @@ interface MenuPanelProps {
   circleName?: string;
   isAdmin?: boolean;
   onCircleNameUpdate?: (newName: string) => Promise<void>;
+  circleId?: number;
+  stampEnabled?: boolean;
+  onStampToggle?: (enabled: boolean) => Promise<void>;
 }
 
-export default function MenuPanel({ onClose, onDeleteCircle, circleName, isAdmin, onCircleNameUpdate }: MenuPanelProps) {
+export default function MenuPanel({ onClose, onDeleteCircle, circleName, isAdmin, onCircleNameUpdate, circleId, stampEnabled, onStampToggle }: MenuPanelProps) {
   const navigate = useNavigate();
   const { clearAuth } = useAuthStore();
   const [editing, setEditing] = useState(false);
   const [editName, setEditName] = useState('');
   const [saving, setSaving] = useState(false);
+  const [stampToggling, setStampToggling] = useState(false);
 
   const handleLogout = () => {
     clearAuth();
@@ -226,6 +230,43 @@ export default function MenuPanel({ onClose, onDeleteCircle, circleName, isAdmin
           <span style={{ fontSize: '20px' }}>🔗</span>
           サークルに参加
         </button>
+
+        {circleId && (
+          <>
+            <div style={{ borderTop: '1px solid #eee', margin: '12px 0' }} />
+            <button
+              style={menuItemStyle}
+              onClick={() => { navigate(`/circles/${circleId}/stamp`); onClose(); }}
+              onMouseEnter={(e) => (e.currentTarget.style.background = '#f0f7ff')}
+              onMouseLeave={(e) => (e.currentTarget.style.background = 'none')}
+            >
+              <span style={{ fontSize: '20px' }}>🎫</span>
+              なかまスタンプ
+            </button>
+            {isAdmin && onStampToggle && (
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 20px 10px 46px', margin: '0 8px', borderRadius: '8px' }}>
+                <span style={{ fontSize: '13px', color: '#666' }}>スタンプ機能</span>
+                <button
+                  onClick={async () => {
+                    setStampToggling(true);
+                    try { await onStampToggle(!stampEnabled); } finally { setStampToggling(false); }
+                  }}
+                  disabled={stampToggling}
+                  style={{
+                    width: '44px', height: '24px', borderRadius: '12px', border: 'none', cursor: stampToggling ? 'default' : 'pointer',
+                    background: stampEnabled ? '#4A90E2' : '#ccc', position: 'relative', transition: 'background 0.2s',
+                  }}
+                >
+                  <span style={{
+                    position: 'absolute', top: '3px', left: stampEnabled ? '23px' : '3px',
+                    width: '18px', height: '18px', borderRadius: '50%', background: 'white',
+                    transition: 'left 0.2s', boxShadow: '0 1px 3px rgba(0,0,0,0.2)',
+                  }} />
+                </button>
+              </div>
+            )}
+          </>
+        )}
 
         <div style={{ borderTop: '1px solid #eee', margin: '12px 0' }} />
 

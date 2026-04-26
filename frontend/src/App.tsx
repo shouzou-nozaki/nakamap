@@ -8,6 +8,7 @@ import JoinCirclePage from './pages/JoinCirclePage';
 import MapPage from './pages/MapPage';
 import ProfileSetupPage from './pages/ProfileSetupPage';
 import ProfileEditPage from './pages/ProfileEditPage';
+import StampPage from './pages/StampPage';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { isAuthenticated } = useAuthStore();
@@ -76,6 +77,14 @@ export default function App() {
           element={
             <ProtectedRoute>
               <MapPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/circles/:circleId/stamp"
+          element={
+            <ProtectedRoute>
+              <StampPage />
             </ProtectedRoute>
           }
         />

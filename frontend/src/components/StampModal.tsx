@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { QRCodeSVG } from 'qrcode.react';
 import { Html5Qrcode } from 'html5-qrcode';
 import { getStampQr, scanStamp } from '../api/stamps';
+import { playStampSound } from '../utils/sound';
 import type { ScanResult } from '../types';
 
 interface Props {
@@ -73,10 +74,16 @@ export default function StampModal({ circleId, onClose }: Props) {
     setError(null);
     try {
       const result = await scanStamp(circleId, token);
+      playStampSound();
       setScanResult(result);
     } catch (err: unknown) {
+      const status = (err as { response?: { status?: number } })?.response?.status;
       const msg = (err as { response?: { data?: { message?: string } } })?.response?.data?.message;
-      setError(msg ?? 'スキャンに失敗しました');
+      if (status === 409) {
+        setError('📅 ' + (msg ?? '本日分はスキャン済みです'));
+      } else {
+        setError(msg ?? 'スキャンに失敗しました');
+      }
     }
   };
 

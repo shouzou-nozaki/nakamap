@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import MapView from '../components/MapView';
 import ProfilePanel from '../components/ProfilePanel';
@@ -9,7 +9,9 @@ import { getLocations } from '../api/locations';
 import { getMyLocation } from '../api/locations';
 import { getCircleDetail, deleteCircle, updateCircleName } from '../api/circles';
 import { getProfile } from '../api/profiles';
-import type { LocationPin, Profile } from '../types';
+import { getNewEncounters } from '../api/stamps';
+import { playStampSound } from '../utils/sound';
+import type { LocationPin, Profile, EncounterHistory } from '../types';
 import useAuthStore from '../store/authStore';
 
 export default function MapPage() {
@@ -27,6 +29,8 @@ export default function MapPage() {
   const [showMemberList, setShowMemberList] = useState(false);
   const [stampEnabled, setStampEnabled] = useState(false);
   const [showStampModal, setShowStampModal] = useState(false);
+  const [incomingEncounter, setIncomingEncounter] = useState<EncounterHistory | null>(null);
+  const pollSinceRef = useRef<string>(new Date().toISOString().slice(0, 19));
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deleteInput, setDeleteInput] = useState('');
   const [deleteLoading, setDeleteLoading] = useState(false);
@@ -80,6 +84,24 @@ export default function MapPage() {
     };
     init();
   }, [id, navigate, loadPins]);
+
+  useEffect(() => {
+    if (!stampEnabled || !id) return;
+    const poll = async () => {
+      try {
+        const found = await getNewEncounters(id, pollSinceRef.current);
+        pollSinceRef.current = new Date().toISOString().slice(0, 19);
+        if (found.length > 0) {
+          setIncomingEncounter(found[found.length - 1]);
+          playStampSound();
+        }
+      } catch {
+        // ポーリングエラーは無視
+      }
+    };
+    const timer = setInterval(poll, 15000);
+    return () => clearInterval(timer);
+  }, [stampEnabled, id]);
 
   const handleDeleteCircle = async () => {
     setDeleteLoading(true);
@@ -458,6 +480,47 @@ export default function MapPage() {
           profile={selectedProfile}
           onClose={() => { setShowProfile(false); setSelectedProfile(null); }}
         />
+      )}
+
+      {/* スキャンされた側への通知トースト */}
+      {incomingEncounter && (
+        <div style={{
+          position: 'fixed',
+          top: 'calc(16px + env(safe-area-inset-top))',
+          left: '50%',
+          transform: 'translateX(-50%)',
+          zIndex: 1300,
+          background: 'white',
+          borderRadius: '16px',
+          padding: '14px 20px',
+          boxShadow: '0 4px 20px rgba(0,0,0,0.2)',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '12px',
+          minWidth: '260px',
+          maxWidth: '90vw',
+          animation: 'slideDown 0.3s ease',
+        }}>
+          {incomingEncounter.partnerPhotoUrl ? (
+            <img src={incomingEncounter.partnerPhotoUrl} alt="" style={{ width: '44px', height: '44px', borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }} />
+          ) : (
+            <div style={{ width: '44px', height: '44px', borderRadius: '50%', background: '#4A90E2', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px', flexShrink: 0 }}>
+              {incomingEncounter.partnerName?.[0] ?? '?'}
+            </div>
+          )}
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <p style={{ margin: '0 0 2px', fontSize: '13px', color: '#888' }}>🎫 スタンプをもらいました！</p>
+            <p style={{ margin: 0, fontSize: '15px', fontWeight: 700, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+              {incomingEncounter.partnerName ?? '(名前なし)'}
+            </p>
+          </div>
+          <button
+            onClick={() => setIncomingEncounter(null)}
+            style={{ background: 'none', border: 'none', fontSize: '18px', cursor: 'pointer', color: '#aaa', flexShrink: 0 }}
+          >
+            ✕
+          </button>
+        </div>
       )}
 
       {/* スタンプモーダル */}

@@ -24,3 +24,11 @@ export const getStampRanking = async (circleId: number): Promise<RankingEntry[]>
 export const toggleStamp = async (circleId: number, enabled: boolean): Promise<void> => {
   await apiClient.patch(`/circles/${circleId}/stamp`, { enabled });
 };
+
+export const getNewEncounters = async (circleId: number, since: string): Promise<EncounterHistory[]> => {
+  const response = await apiClient.get<EncounterHistory[]>(
+    `/circles/${circleId}/stamp/new-encounters`,
+    { params: { since } }
+  );
+  return response.data;
+};

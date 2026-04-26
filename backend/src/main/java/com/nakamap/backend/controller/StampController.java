@@ -8,10 +8,13 @@ import com.nakamap.backend.dto.response.StampQrResponse;
 import com.nakamap.backend.service.StampService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
+
+import java.time.LocalDateTime;
 
 import java.util.List;
 
@@ -49,5 +52,13 @@ public class StampController {
             @AuthenticationPrincipal UserDetails userDetails,
             @PathVariable Long circleId) {
         return ResponseEntity.ok(stampService.getRanking(userDetails.getUsername(), circleId));
+    }
+
+    @GetMapping("/new-encounters")
+    public ResponseEntity<List<EncounterHistoryResponse>> getNewEncounters(
+            @AuthenticationPrincipal UserDetails userDetails,
+            @PathVariable Long circleId,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime since) {
+        return ResponseEntity.ok(stampService.getNewEncounters(userDetails.getUsername(), circleId, since));
     }
 }

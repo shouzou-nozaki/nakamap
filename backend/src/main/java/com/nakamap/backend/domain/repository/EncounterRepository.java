@@ -46,5 +46,30 @@ public interface EncounterRepository extends JpaRepository<Encounter, Long> {
             @Param("circleId") Long circleId,
             @Param("since") LocalDateTime since);
 
+    @Query("""
+        SELECT e FROM Encounter e
+        WHERE e.circleId = :circleId
+          AND ((e.scannerUserId = :userA AND e.targetUserId = :userB)
+            OR (e.scannerUserId = :userB AND e.targetUserId = :userA))
+          AND e.metAt >= :since
+        """)
+    List<Encounter> findPairEncountersSince(
+            @Param("circleId") Long circleId,
+            @Param("userA") Long userA,
+            @Param("userB") Long userB,
+            @Param("since") LocalDateTime since);
+
+    @Query("""
+        SELECT e FROM Encounter e
+        WHERE e.circleId = :circleId
+          AND e.targetUserId = :userId
+          AND e.metAt > :since
+        ORDER BY e.metAt ASC
+        """)
+    List<Encounter> findNewEncountersForTarget(
+            @Param("circleId") Long circleId,
+            @Param("userId") Long userId,
+            @Param("since") LocalDateTime since);
+
     void deleteByCircleId(Long circleId);
 }

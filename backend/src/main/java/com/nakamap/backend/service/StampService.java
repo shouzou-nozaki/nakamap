@@ -11,6 +11,7 @@ import com.nakamap.backend.dto.response.EncounterHistoryResponse;
 import com.nakamap.backend.dto.response.RankingEntryResponse;
 import com.nakamap.backend.dto.response.ScanResultResponse;
 import com.nakamap.backend.dto.response.StampQrResponse;
+import com.nakamap.backend.exception.DuplicateResourceException;
 import com.nakamap.backend.exception.ForbiddenException;
 import com.nakamap.backend.exception.ResourceNotFoundException;
 import com.nakamap.backend.exception.UnauthorizedException;
@@ -68,6 +69,11 @@ public class StampService {
         User target = userRepository.findById(claims.userId())
                 .orElseThrow(() -> new ResourceNotFoundException("User not found: " + claims.userId()));
 
+        LocalDateTime startOfToday = LocalDateTime.now().withHour(0).withMinute(0).withSecond(0).withNano(0);
+        if (!encounterRepository.findPairEncountersSince(circleId, scanner.getUserId(), target.getUserId(), startOfToday).isEmpty()) {
+            throw new DuplicateResourceException("本日はすでにスキャン済みです");
+        }
+
         boolean isFirst = encounterRepository.findPairEncounters(circleId, scanner.getUserId(), target.getUserId()).isEmpty();
         int points = isFirst ? POINTS_FIRST_MEETING : POINTS_REPEAT;
 
@@ -124,6 +130,29 @@ public class StampService {
                     partner.getPhotoUrl(),
                     e.getMetAt(),
                     isFirst
+            );
+        }).filter(Objects::nonNull).collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
+    public List<EncounterHistoryResponse> getNewEncounters(String email, Long circleId, LocalDateTime since) {
+        User user = getUser(email);
+        requireMember(user.getUserId(), circleId);
+
+        List<Encounter> encounters = encounterRepository.findNewEncountersForTarget(circleId, user.getUserId(), since);
+        Map<Long, User> userCache = new HashMap<>();
+
+        return encounters.stream().map(e -> {
+            User scanner = userCache.computeIfAbsent(e.getScannerUserId(),
+                    id -> userRepository.findById(id).orElse(null));
+            if (scanner == null) return null;
+            return new EncounterHistoryResponse(
+                    e.getEncounterId(),
+                    scanner.getUserId(),
+                    scanner.getName(),
+                    scanner.getPhotoUrl(),
+                    e.getMetAt(),
+                    false
             );
         }).filter(Objects::nonNull).collect(Collectors.toList());
     }

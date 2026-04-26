@@ -15,7 +15,7 @@ export default function StampModal({ circleId, onClose }: Props) {
   const [tab, setTab] = useState<Tab>('show');
   const [qrToken, setQrToken] = useState<string | null>(null);
   const [qrLoading, setQrLoading] = useState(false);
-  const [scanning, setScanning] = useState(false);
+  const [cameraActive, setCameraActive] = useState(false);
   const [scanResult, setScanResult] = useState<ScanResult | null>(null);
   const [error, setError] = useState<string | null>(null);
   const scannerRef = useRef<Html5Qrcode | null>(null);
@@ -25,10 +25,28 @@ export default function StampModal({ circleId, onClose }: Props) {
     if (tab === 'show') {
       loadQr();
     }
-    return () => {
-      stopScanner();
-    };
+    return () => { stopScanner(); };
   }, [tab]);
+
+  // div が DOM に存在してから起動する
+  useEffect(() => {
+    if (!cameraActive) return;
+    const scanner = new Html5Qrcode(scannerDivId);
+    scannerRef.current = scanner;
+    scanner.start(
+      { facingMode: 'environment' },
+      { fps: 10, qrbox: { width: 240, height: 240 } },
+      async (decodedText) => {
+        await stopScanner();
+        await handleScanSuccess(decodedText);
+      },
+      () => {}
+    ).catch(() => {
+      scannerRef.current = null;
+      setCameraActive(false);
+      setError('カメラの起動に失敗しました。ブラウザのカメラ許可を確認してください。');
+    });
+  }, [cameraActive]);
 
   const loadQr = async () => {
     setQrLoading(true);
@@ -43,38 +61,12 @@ export default function StampModal({ circleId, onClose }: Props) {
     }
   };
 
-  const startScanner = async () => {
-    setScanning(true);
-    setError(null);
-    setScanResult(null);
-    try {
-      const scanner = new Html5Qrcode(scannerDivId);
-      scannerRef.current = scanner;
-      await scanner.start(
-        { facingMode: 'environment' },
-        { fps: 10, qrbox: { width: 240, height: 240 } },
-        async (decodedText) => {
-          await stopScanner();
-          await handleScanSuccess(decodedText);
-        },
-        () => {}
-      );
-    } catch {
-      setScanning(false);
-      setError('カメラの起動に失敗しました。カメラのアクセスを許可してください。');
-    }
-  };
-
   const stopScanner = async () => {
     if (scannerRef.current) {
-      try {
-        await scannerRef.current.stop();
-      } catch {
-        // already stopped
-      }
+      try { await scannerRef.current.stop(); } catch { /* already stopped */ }
       scannerRef.current = null;
     }
-    setScanning(false);
+    setCameraActive(false);
   };
 
   const handleScanSuccess = async (token: string) => {
@@ -122,7 +114,7 @@ export default function StampModal({ circleId, onClose }: Props) {
           <button style={tabStyle(tab === 'show')} onClick={() => { stopScanner(); setTab('show'); }}>
             QR表示
           </button>
-          <button style={tabStyle(tab === 'scan')} onClick={() => setTab('scan')}>
+          <button style={tabStyle(tab === 'scan')} onClick={() => { setScanResult(null); setError(null); setTab('scan'); }}>
             スキャン
           </button>
         </div>
@@ -154,30 +146,35 @@ export default function StampModal({ circleId, onClose }: Props) {
           {/* Scan tab */}
           {tab === 'scan' && (
             <div style={{ textAlign: 'center' }}>
-              {!scanning && !scanResult && (
+              {/* スキャナー div は常に DOM に存在させる（cameraActive 時のみ表示） */}
+              <div
+                id={scannerDivId}
+                style={{ borderRadius: '8px', overflow: 'hidden', display: cameraActive ? 'block' : 'none' }}
+              />
+
+              {cameraActive && (
+                <>
+                  <p style={{ margin: '12px 0 8px', fontSize: '13px', color: '#666' }}>QRコードをカメラに向けてください</p>
+                  <button
+                    onClick={stopScanner}
+                    style={{ padding: '8px 20px', background: '#f0f0f0', border: 'none', borderRadius: '8px', fontSize: '13px', cursor: 'pointer' }}
+                  >
+                    キャンセル
+                  </button>
+                </>
+              )}
+
+              {!cameraActive && !scanResult && (
                 <>
                   <p style={{ margin: '0 0 16px', fontSize: '13px', color: '#666' }}>
                     相手のQRコードをスキャンしてスタンプを押しましょう
                   </p>
                   {error && <p style={{ color: '#e74c3c', fontSize: '13px', marginBottom: '12px' }}>{error}</p>}
                   <button
-                    onClick={startScanner}
+                    onClick={() => { setError(null); setCameraActive(true); }}
                     style={{ padding: '12px 28px', background: '#4A90E2', color: 'white', border: 'none', borderRadius: '10px', fontSize: '15px', fontWeight: 700, cursor: 'pointer' }}
                   >
                     📷 カメラを起動
-                  </button>
-                </>
-              )}
-
-              {scanning && (
-                <>
-                  <p style={{ margin: '0 0 12px', fontSize: '13px', color: '#666' }}>QRコードをカメラに向けてください</p>
-                  <div id={scannerDivId} style={{ borderRadius: '8px', overflow: 'hidden' }} />
-                  <button
-                    onClick={stopScanner}
-                    style={{ marginTop: '12px', padding: '8px 20px', background: '#f0f0f0', border: 'none', borderRadius: '8px', fontSize: '13px', cursor: 'pointer' }}
-                  >
-                    キャンセル
                   </button>
                 </>
               )}

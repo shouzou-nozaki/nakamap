@@ -24,7 +24,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -116,20 +115,7 @@ public class CircleService {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UnauthorizedException("User not found"));
 
-        List<Membership> memberships = membershipRepository.findByUserId(user.getUserId());
-
-        return memberships.stream().map(membership -> {
-            Circle circle = circleRepository.findById(membership.getCircleId())
-                    .orElseThrow(() -> new ResourceNotFoundException("Circle not found: " + membership.getCircleId()));
-            long memberCount = membershipRepository.countByCircleId(circle.getCircleId());
-
-            return CircleListItemResponse.builder()
-                    .circleId(circle.getCircleId())
-                    .name(circle.getName())
-                    .role(membership.getRole())
-                    .memberCount(memberCount)
-                    .build();
-        }).collect(Collectors.toList());
+        return membershipRepository.findCircleListByUserId(user.getUserId());
     }
 
     @Transactional

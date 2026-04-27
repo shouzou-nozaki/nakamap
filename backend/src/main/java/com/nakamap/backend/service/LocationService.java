@@ -21,6 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 import java.util.stream.Collectors;
 
@@ -122,16 +123,17 @@ public class LocationService {
 
         List<Location> locations = locationRepository.findByCircleId(circleId);
 
+        List<Long> userIds = locations.stream().map(Location::getUserId).toList();
+        Map<Long, User> userMap = userRepository.findAllById(userIds).stream()
+                .collect(Collectors.toMap(User::getUserId, u -> u));
+
         return locations.stream().map(location -> {
-            User user = userRepository.findById(location.getUserId())
-                    .orElseThrow(() -> new ResourceNotFoundException("User not found: " + location.getUserId()));
-
-            String photoUrl = user.getPhotoUrl();
-
+            User user = userMap.get(location.getUserId());
+            if (user == null) throw new ResourceNotFoundException("User not found: " + location.getUserId());
             return LocationPinResponse.builder()
                     .userId(user.getUserId())
                     .name(user.getName())
-                    .photoUrl(photoUrl)
+                    .photoUrl(user.getPhotoUrl())
                     .displayLatitude(location.getDisplayLatitude())
                     .displayLongitude(location.getDisplayLongitude())
                     .build();

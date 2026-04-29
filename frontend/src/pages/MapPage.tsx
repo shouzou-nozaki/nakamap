@@ -30,7 +30,9 @@ export default function MapPage() {
   const [stampEnabled, setStampEnabled] = useState(false);
   const [showStampModal, setShowStampModal] = useState(false);
   const [incomingEncounter, setIncomingEncounter] = useState<EncounterHistory | null>(null);
-  const pollSinceRef = useRef<string>(new Date().toISOString().slice(0, 19));
+  // JSTで現在時刻を返す（metAtがJSTで保存されているため合わせる必要がある）
+  const nowJst = () => new Date(Date.now() + 9 * 60 * 60 * 1000).toISOString().slice(0, 19);
+  const pollSinceRef = useRef<string>(nowJst());
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deleteInput, setDeleteInput] = useState('');
   const [deleteLoading, setDeleteLoading] = useState(false);
@@ -90,7 +92,7 @@ export default function MapPage() {
     const poll = async () => {
       try {
         const found = await getNewEncounters(id, pollSinceRef.current);
-        pollSinceRef.current = new Date().toISOString().slice(0, 19);
+        pollSinceRef.current = nowJst();
         if (found.length > 0) {
           setIncomingEncounter(found[found.length - 1]);
           playStampSound();

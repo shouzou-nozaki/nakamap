@@ -184,13 +184,10 @@ public class StampService {
             Set<Long> metPartners = new HashSet<>();
             for (Encounter e : userEncounters) {
                 Long partnerId = e.getScannerUserId().equals(memberId) ? e.getTargetUserId() : e.getScannerUserId();
-                boolean alreadyCounted = metPartners.contains(partnerId);
                 boolean isFirstEver = isFirstMeetingEver(circleId, memberId, partnerId, e.getMetAt());
                 int pts = isFirstEver ? POINTS_FIRST_MEETING : POINTS_REPEAT;
-                if (!alreadyCounted) {
-                    pointsMap.merge(memberId, pts, Integer::sum);
-                    metPartners.add(partnerId);
-                }
+                pointsMap.merge(memberId, pts, Integer::sum);
+                metPartners.add(partnerId);
             }
 
             boolean metAll = memberIds.stream()

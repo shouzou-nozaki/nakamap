@@ -23,9 +23,9 @@ interface PinMarkerProps {
   r: number;
   onPinClick?: (userId: number) => void;
   wasDrag: (e: React.MouseEvent) => boolean;
-  onTooltip: (name: string, x: number, y: number) => void;
-  onTooltipMove: (x: number, y: number) => void;
-  onTooltipHide: () => void;
+  onTooltip?: (name: string, x: number, y: number) => void;
+  onTooltipMove?: (x: number, y: number) => void;
+  onTooltipHide?: () => void;
 }
 
 function PinMarker({ pin, offset, r, onPinClick, wasDrag, onTooltip, onTooltipMove, onTooltipHide }: PinMarkerProps) {
@@ -39,8 +39,8 @@ function PinMarker({ pin, offset, r, onPinClick, wasDrag, onTooltip, onTooltipMo
       <g
         transform={`translate(${dx}, ${dy})`}
         onClick={(e: React.MouseEvent) => { if (!wasDrag(e)) onPinClick?.(pin.userId); }}
-        onMouseEnter={(e: React.MouseEvent) => onTooltip(pin.name ?? '', e.clientX, e.clientY)}
-        onMouseMove={(e: React.MouseEvent) => onTooltipMove(e.clientX, e.clientY)}
+        onMouseEnter={(e: React.MouseEvent) => onTooltip?.(pin.name ?? '', e.clientX, e.clientY)}
+        onMouseMove={(e: React.MouseEvent) => onTooltipMove?.(e.clientX, e.clientY)}
         onMouseLeave={onTooltipHide}
         style={{ cursor: 'pointer' }}
       >
@@ -258,9 +258,9 @@ export default function JapanPrefectureMap({
                   r={iconRadius}
                   onPinClick={onPinClick}
                   wasDrag={wasDrag}
-                  onTooltip={(name, x, y) => setPinTooltip({ name, x, y })}
-                  onTooltipMove={(x, y) => setPinTooltip(prev => prev ? { ...prev, x, y } : null)}
-                  onTooltipHide={() => setPinTooltip(null)}
+                  onTooltip={isMobile ? undefined : (name, x, y) => setPinTooltip({ name, x, y })}
+                  onTooltipMove={isMobile ? undefined : (x, y) => setPinTooltip(prev => prev ? { ...prev, x, y } : null)}
+                  onTooltipHide={isMobile ? undefined : () => setPinTooltip(null)}
                 />
               </Marker>
             ));

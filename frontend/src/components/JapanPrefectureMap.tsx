@@ -194,13 +194,16 @@ export default function JapanPrefectureMap({
       arr.push(pin);
       map.set(pref.id, arr);
     }
+    // アイコンの端がリーダー線の先端に来るようオフセット距離を調整
+    const baseScale = (50 + iconRadius) / 50;
     const groups: PrefGroup[] = Array.from(map.entries()).map(([prefId, ps]) => {
       const pref = PREFECTURE_MAP[prefId];
-      const base = pref ? edgeOffset(pref.lng, pref.lat) : [0, 0] as [number, number];
+      const raw = pref ? edgeOffset(pref.lng, pref.lat) : [0, 0] as [number, number];
+      const base: [number, number] = [raw[0] * baseScale, raw[1] * baseScale];
       return { prefId, pins: ps, offsets: spreadOffsets(base, ps.length) };
     });
     return resolveCollisions(groups);
-  }, [pins]);
+  }, [pins, iconRadius]);
 
   return (
     <div

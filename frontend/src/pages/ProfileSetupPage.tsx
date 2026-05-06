@@ -6,11 +6,13 @@ import PhotoUpload from '../components/PhotoUpload';
 import { registerLocation } from '../api/locations';
 import { updateProfile } from '../api/profiles';
 import useAuthStore from '../store/authStore';
+import useMapStore from '../store/mapStore';
 
 export default function ProfileSetupPage() {
   const { circleId } = useParams<{ circleId: string }>();
   const navigate = useNavigate();
   const { name: storeName, photoUrl: storePhotoUrl } = useAuthStore();
+  const { mapType } = useMapStore();
 
   const [name, setName] = useState(storeName || '');
   const [photoUrl, setPhotoUrl] = useState(storePhotoUrl || '');
@@ -35,7 +37,7 @@ export default function ProfileSetupPage() {
       return;
     }
     if (selectedLat === null || selectedLng === null) {
-      setError('地図上で居住地をクリックしてください');
+      setError('居住地の都道府県を選択してください');
       return;
     }
     setLoading(true);
@@ -184,11 +186,11 @@ export default function ProfileSetupPage() {
         <div style={{ display: 'flex', flexDirection: 'column', height: 'calc(100vh - 120px)' }}>
           <div style={{ background: 'white', padding: '12px 16px', borderBottom: '1px solid #eee' }}>
             <p style={{ margin: 0, fontSize: '14px', color: '#555' }}>
-              地図をクリックして居住地を設定してください
+              居住している都道府県をタップしてください
             </p>
             {selectedLat !== null && (
               <p style={{ margin: '4px 0 0', fontSize: '12px', color: '#4A90E2', fontWeight: 600 }}>
-                ✓ 位置を選択しました
+                ✓ 都道府県を選択しました
               </p>
             )}
           </div>
@@ -199,6 +201,7 @@ export default function ProfileSetupPage() {
               selectedLat={selectedLat}
               selectedLng={selectedLng}
               style={{ height: '100%' }}
+              mapType={mapType}
             />
           </div>
 

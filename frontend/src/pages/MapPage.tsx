@@ -42,6 +42,15 @@ export default function MapPage() {
   const [refreshing, setRefreshing] = useState(false);
   const [initialCenter, setInitialCenter] = useState<[number, number] | undefined>(undefined);
   const { mapType, setMapType } = useMapStore();
+  const [adminToast, setAdminToast] = useState<string | null>(null);
+
+  const handleSetMapType = (type: 'simple' | 'detail') => {
+    if (type === mapType) return;
+    setMapType(type);
+    const label = type === 'simple' ? '簡易' : '詳細';
+    setAdminToast(`マップを${label}モードに切り替えました。サークル内の全メンバーに反映されます。`);
+    setTimeout(() => setAdminToast(null), 4000);
+  };
 
   const id = Number(circleId);
 
@@ -315,7 +324,7 @@ export default function MapPage() {
           }}
         >
           <button
-            onClick={() => setMapType('simple')}
+            onClick={() => handleSetMapType('simple')}
             style={{
               padding: '8px 14px',
               border: 'none',
@@ -329,7 +338,7 @@ export default function MapPage() {
             🗾 簡易
           </button>
           <button
-            onClick={() => setMapType('detail')}
+            onClick={() => handleSetMapType('detail')}
             style={{
               padding: '8px 14px',
               border: 'none',
@@ -342,6 +351,28 @@ export default function MapPage() {
           >
             🌍 詳細
           </button>
+        </div>
+      )}
+
+      {/* adminアクション通知トースト */}
+      {adminToast && (
+        <div style={{
+          position: 'absolute',
+          top: 'calc(70px + env(safe-area-inset-top))',
+          left: '50%',
+          transform: 'translateX(-50%)',
+          zIndex: 1000,
+          background: 'rgba(30,30,30,0.88)',
+          color: 'white',
+          padding: '10px 18px',
+          borderRadius: '10px',
+          fontSize: '13px',
+          fontWeight: 500,
+          whiteSpace: 'nowrap',
+          boxShadow: '0 4px 16px rgba(0,0,0,0.2)',
+          pointerEvents: 'none',
+        }}>
+          {adminToast}
         </div>
       )}
 

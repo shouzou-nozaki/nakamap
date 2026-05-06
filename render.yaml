@@ -1,6 +1,6 @@
 databases:
   - name: nakamap-stg-db
-    plan: free
+    plan: starter
     databaseName: nakamap
     user: nakamap
 

@@ -50,7 +50,7 @@ export default function ProfilePanel({ profile, onClose }: ProfilePanelProps) {
         position: 'fixed',
         top: 0,
         right: 0,
-        width: '320px',
+        width: 'min(320px, 50vw)',
         height: '100vh',
         backgroundColor: 'white',
         boxShadow: '-4px 0 16px rgba(0,0,0,0.15)',

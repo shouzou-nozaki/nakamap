@@ -74,9 +74,7 @@ const PROJECTION_CONFIG = {
 
 const DRAG_THRESHOLD = 5;
 
-const LEADER_LENGTH = 50;
 const SVG_W = 800, SVG_H = 600;
-
 
 function projectSVG(lng: number, lat: number): [number, number] {
   const merc = (φ: number) => Math.log(Math.tan(Math.PI / 4 + φ * Math.PI / 360));
@@ -84,9 +82,9 @@ function projectSVG(lng: number, lat: number): [number, number] {
   return [(lng - 122) / 32 * SVG_W, (1 - (merc(lat) - minM) / (maxM - minM)) * SVG_H];
 }
 
-function edgeOffset(seaDeg: number): [number, number] {
+function edgeOffset(seaDeg: number, leaderLength: number): [number, number] {
   const rad = seaDeg * Math.PI / 180;
-  return [Math.sin(rad) * LEADER_LENGTH, -Math.cos(rad) * LEADER_LENGTH];
+  return [Math.sin(rad) * leaderLength, -Math.cos(rad) * leaderLength];
 }
 
 // 複数ピンを同一県に配置する際の perpendicular 拡散
@@ -193,9 +191,10 @@ export default function JapanPrefectureMap({
       arr.push(pin);
       map.set(pref.id, arr);
     }
+    const leaderLength = isMobile ? 90 : 50;
     const groups: PrefGroup[] = Array.from(map.entries()).map(([prefId, ps]) => {
       const pref = PREFECTURE_MAP[prefId];
-      const base = pref ? edgeOffset(pref.seaDeg) : [0, 0] as [number, number];
+      const base = pref ? edgeOffset(pref.seaDeg, leaderLength) : [0, 0] as [number, number];
       return { prefId, pins: ps, offsets: spreadOffsets(base, ps.length) };
     });
     return resolveCollisions(groups);

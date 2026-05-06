@@ -168,7 +168,7 @@ export default function JapanPrefectureMap({
   selectedLng,
 }: JapanPrefectureMapProps) {
   const isMobile = useIsMobile();
-  const iconRadius = isMobile ? 45 : 20;
+  const iconRadius = isMobile ? 45 : 14;
   const [hoveredId, setHoveredId] = useState<number | null>(null);
   const [pinTooltip, setPinTooltip] = useState<{ name: string; x: number; y: number } | null>(null);
   const mouseDownPos = useRef<{ x: number; y: number } | null>(null);

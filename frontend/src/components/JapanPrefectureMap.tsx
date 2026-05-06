@@ -213,7 +213,7 @@ export default function JapanPrefectureMap({
         height={600}
         style={{ width: '100%', height: '100%' }}
       >
-        <ZoomableGroup zoom={1} minZoom={0.8} maxZoom={6}>
+        <ZoomableGroup zoom={isMobile ? 1.8 : 1} minZoom={0.8} maxZoom={isMobile ? 12 : 6}>
           <Geographies geography={GEO_URL}>
             {({ geographies }) =>
               geographies.map(geo => {

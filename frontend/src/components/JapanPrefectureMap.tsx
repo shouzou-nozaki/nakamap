@@ -24,7 +24,7 @@ function PinMarker({ pin, offset, onPinClick, wasDrag, onTooltip, onTooltipMove,
   return (
     <g transform={`scale(${1 / k})`}>
       <line x1="0" y1="0" x2={dx} y2={dy} stroke="#4A90E2" strokeWidth="1.5" />
-      <circle cx="0" cy="0" r="3" fill="#4A90E2" stroke="white" strokeWidth="1" />
+      <circle cx="0" cy="0" r="4" fill="#4A90E2" stroke="white" strokeWidth="1" />
       <g
         transform={`translate(${dx}, ${dy})`}
         onClick={(e: React.MouseEvent) => { if (!wasDrag(e)) onPinClick?.(pin.userId); }}
@@ -35,18 +35,18 @@ function PinMarker({ pin, offset, onPinClick, wasDrag, onTooltip, onTooltipMove,
       >
         <defs>
           <clipPath id={`clip-${pin.userId}`}>
-            <circle cx="0" cy="0" r="13" />
+            <circle cx="0" cy="0" r="17" />
           </clipPath>
         </defs>
         {pin.photoUrl ? (
           <>
-            <circle cx="0" cy="0" r="14" fill="white" stroke="#4A90E2" strokeWidth="1.5" />
-            <image href={pin.photoUrl} x="-13" y="-13" width="26" height="26" clipPath={`url(#clip-${pin.userId})`} />
+            <circle cx="0" cy="0" r="18" fill="white" stroke="#4A90E2" strokeWidth="2" />
+            <image href={pin.photoUrl} x="-17" y="-17" width="34" height="34" clipPath={`url(#clip-${pin.userId})`} />
           </>
         ) : (
           <>
-            <circle cx="0" cy="0" r="14" fill="#4A90E2" />
-            <text textAnchor="middle" dominantBaseline="central" style={{ fontSize: '11px', fill: 'white', fontWeight: 700, pointerEvents: 'none' }}>
+            <circle cx="0" cy="0" r="18" fill="#4A90E2" />
+            <text textAnchor="middle" dominantBaseline="central" style={{ fontSize: '14px', fill: 'white', fontWeight: 700, pointerEvents: 'none' }}>
               {(pin.name ?? '?').charAt(0)}
             </text>
           </>
@@ -105,7 +105,7 @@ interface PrefGroup {
   offsets: [number, number][];
 }
 
-const ICON_MIN_DIST = 34; // アイコン直径(28) + マージン
+const ICON_MIN_DIST = 44; // アイコン直径(36) + マージン
 
 function resolveCollisions(groups: PrefGroup[]): PrefGroup[] {
   // 全アイコンのSVG座標を収集

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import MapView from '../components/MapView';
 import PhotoUpload from '../components/PhotoUpload';
+import useMapStore from '../store/mapStore';
 import { getMyLocation, updateLocation } from '../api/locations';
 import { getProfile, updateProfile } from '../api/profiles';
 import useAuthStore from '../store/authStore';
@@ -10,6 +11,7 @@ export default function ProfileEditPage() {
   const { circleId } = useParams<{ circleId: string }>();
   const navigate = useNavigate();
   const { userId } = useAuthStore();
+  const { mapType } = useMapStore();
 
   const [name, setName] = useState('');
   const [photoUrl, setPhotoUrl] = useState('');
@@ -232,6 +234,7 @@ export default function ProfileEditPage() {
               selectedLng={selectedLng}
               center={selectedLat !== null ? [selectedLat, selectedLng!] : undefined}
               style={{ height: '100%' }}
+              mapType={mapType}
             />
           </div>
 

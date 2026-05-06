@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import MapView from '../components/MapView';
+import useMapStore from '../store/mapStore';
 import ProfilePanel from '../components/ProfilePanel';
 import MenuPanel from '../components/MenuPanel';
 import MemberListPanel from '../components/MemberListPanel';
@@ -40,6 +41,7 @@ export default function MapPage() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [initialCenter, setInitialCenter] = useState<[number, number] | undefined>(undefined);
+  const { mapType, setMapType } = useMapStore();
 
   const id = Number(circleId);
 
@@ -164,6 +166,7 @@ export default function MapPage() {
           onPinClick={handlePinClick}
           center={initialCenter}
           style={{ height: '100vh' }}
+          mapType={mapType}
         />
       </div>
 
@@ -295,6 +298,52 @@ export default function MapPage() {
           👥
         </button>
       </div>
+
+      {/* マップ切り替えボタン（adminのみ） */}
+      {joinCode !== null && (
+        <div
+          style={{
+            position: 'absolute',
+            bottom: 'calc(24px + env(safe-area-inset-bottom))',
+            left: 'calc(16px + env(safe-area-inset-left))',
+            zIndex: 500,
+            display: 'flex',
+            background: 'white',
+            borderRadius: '10px',
+            boxShadow: '0 2px 10px rgba(0,0,0,0.15)',
+            overflow: 'hidden',
+          }}
+        >
+          <button
+            onClick={() => setMapType('simple')}
+            style={{
+              padding: '8px 14px',
+              border: 'none',
+              background: mapType === 'simple' ? '#4A90E2' : 'white',
+              color: mapType === 'simple' ? 'white' : '#666',
+              fontSize: '13px',
+              fontWeight: 600,
+              cursor: 'pointer',
+            }}
+          >
+            🗾 簡易
+          </button>
+          <button
+            onClick={() => setMapType('detail')}
+            style={{
+              padding: '8px 14px',
+              border: 'none',
+              background: mapType === 'detail' ? '#4A90E2' : 'white',
+              color: mapType === 'detail' ? 'white' : '#666',
+              fontSize: '13px',
+              fontWeight: 600,
+              cursor: 'pointer',
+            }}
+          >
+            🌍 詳細
+          </button>
+        </div>
+      )}
 
       {/* 再読み込みボタン */}
       <button

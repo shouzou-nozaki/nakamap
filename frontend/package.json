@@ -10,14 +10,18 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@types/topojson-client": "^3.1.5",
     "axios": "^1.15.0",
     "html5-qrcode": "^2.3.8",
     "leaflet": "^1.9.4",
+    "prop-types": "^15.8.1",
     "qrcode.react": "^4.2.0",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
     "react-leaflet": "^5.0.0",
     "react-router-dom": "^7.14.1",
+    "react-simple-maps": "^3.0.0",
+    "topojson-client": "^3.1.0",
     "zustand": "^5.0.12"
   },
   "devDependencies": {

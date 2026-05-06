@@ -32,7 +32,7 @@ services:
     name: nakamap-stg-frontend
     env: static
     rootDir: frontend
-    buildCommand: npm install && npm run build
+    buildCommand: npm install --legacy-peer-deps && npm run build
     staticPublishPath: dist
     envVars:
       # バックエンドのデプロイ後に "https://nakamap-stg-backend.onrender.com" を設定

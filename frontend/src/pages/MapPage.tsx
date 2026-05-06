@@ -42,14 +42,28 @@ export default function MapPage() {
   const [refreshing, setRefreshing] = useState(false);
   const [initialCenter, setInitialCenter] = useState<[number, number] | undefined>(undefined);
   const { mapType, setMapType } = useMapStore();
-  const [adminToast, setAdminToast] = useState<string | null>(null);
+  const [adminConfirm, setAdminConfirm] = useState<{ message: string } | null>(null);
+  const confirmResolverRef = useRef<((result: boolean) => void) | null>(null);
 
-  const handleSetMapType = (type: 'simple' | 'detail') => {
+  const resolveConfirm = (result: boolean) => {
+    setAdminConfirm(null);
+    confirmResolverRef.current?.(result);
+    confirmResolverRef.current = null;
+  };
+
+  const requestAdminConfirm = (message: string): Promise<boolean> =>
+    new Promise((resolve) => {
+      setAdminConfirm({ message });
+      confirmResolverRef.current = resolve;
+    });
+
+  const handleSetMapType = async (type: 'simple' | 'detail') => {
     if (type === mapType) return;
-    setMapType(type);
     const label = type === 'simple' ? '簡易' : '詳細';
-    setAdminToast(`マップを${label}モードに切り替えました。サークル内の全メンバーに反映されます。`);
-    setTimeout(() => setAdminToast(null), 4000);
+    const ok = await requestAdminConfirm(
+      `マップを${label}モードに切り替えますか？\nサークル内の全メンバーに反映されます。`
+    );
+    if (ok) setMapType(type);
   };
 
   const id = Number(circleId);
@@ -354,26 +368,45 @@ export default function MapPage() {
         </div>
       )}
 
-      {/* adminアクション通知トースト */}
-      {adminToast && (
-        <div style={{
-          position: 'absolute',
-          top: 'calc(70px + env(safe-area-inset-top))',
-          left: '50%',
-          transform: 'translateX(-50%)',
-          zIndex: 1000,
-          background: 'rgba(30,30,30,0.88)',
-          color: 'white',
-          padding: '10px 18px',
-          borderRadius: '10px',
-          fontSize: '13px',
-          fontWeight: 500,
-          whiteSpace: 'nowrap',
-          boxShadow: '0 4px 16px rgba(0,0,0,0.2)',
-          pointerEvents: 'none',
-        }}>
-          {adminToast}
-        </div>
+      {/* adminアクション確認ダイアログ */}
+      {adminConfirm && (
+        <>
+          <div
+            onClick={() => resolveConfirm(false)}
+            style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.4)', zIndex: 1100 }}
+          />
+          <div style={{
+            position: 'fixed',
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            background: 'white',
+            borderRadius: '14px',
+            padding: '24px 20px',
+            zIndex: 1101,
+            boxShadow: '0 8px 32px rgba(0,0,0,0.2)',
+            width: 'min(320px, 90vw)',
+            textAlign: 'center',
+          }}>
+            <p style={{ margin: '0 0 20px', fontSize: '14px', color: '#333', lineHeight: 1.7, whiteSpace: 'pre-line' }}>
+              {adminConfirm.message}
+            </p>
+            <div style={{ display: 'flex', gap: '10px' }}>
+              <button
+                onClick={() => resolveConfirm(false)}
+                style={{ flex: 1, padding: '10px', background: 'white', border: '1px solid #ddd', borderRadius: '8px', fontSize: '14px', cursor: 'pointer', fontWeight: 600, color: '#666' }}
+              >
+                いいえ
+              </button>
+              <button
+                onClick={() => resolveConfirm(true)}
+                style={{ flex: 1, padding: '10px', background: '#4A90E2', border: 'none', borderRadius: '8px', fontSize: '14px', cursor: 'pointer', fontWeight: 600, color: 'white' }}
+              >
+                はい
+              </button>
+            </div>
+          </div>
+        </>
       )}
 
       {/* 再読み込みボタン */}
@@ -483,12 +516,20 @@ export default function MapPage() {
           circleName={circleName}
           isAdmin={joinCode !== null}
           onCircleNameUpdate={async (newName) => {
+            const ok = await requestAdminConfirm(
+              `サークル名を「${newName}」に変更しますか？\nサークル内の全メンバーに反映されます。`
+            );
+            if (!ok) throw new Error('cancelled');
             await updateCircleName(id, newName);
             setCircleName(newName);
           }}
           circleId={id}
           stampEnabled={stampEnabled}
           onStampToggle={joinCode !== null ? async (enabled) => {
+            const ok = await requestAdminConfirm(
+              `スタンプ機能を${enabled ? 'ON' : 'OFF'}にしますか？\nサークル内の全メンバーに反映されます。`
+            );
+            if (!ok) return;
             const { toggleStamp } = await import('../api/stamps');
             await toggleStamp(id, enabled);
             setStampEnabled(enabled);

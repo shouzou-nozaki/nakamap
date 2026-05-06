@@ -1,0 +1,47 @@
+databases:
+  - name: nakamap-stg-db
+    plan: free
+    databaseName: nakamap
+    user: nakamap
+
+services:
+  - type: web
+    name: nakamap-stg-backend
+    plan: free
+    env: docker
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    envVars:
+      # RenderダッシュボードのDB詳細から "Internal Database URL" をコピーし
+      # 先頭の "postgresql://" を "jdbc:postgresql://" に変えて設定する
+      - key: DB_URL
+        sync: false
+      - key: DB_USER
+        fromDatabase:
+          name: nakamap-stg-db
+          property: user
+      - key: DB_PASSWORD
+        fromDatabase:
+          name: nakamap-stg-db
+          property: password
+      - key: JWT_SECRET
+        generateValue: true
+      # フロントエンドのデプロイ後に "https://nakamap-stg-frontend.onrender.com" を設定
+      - key: CORS_ALLOWED_ORIGINS
+        sync: false
+
+  - type: web
+    name: nakamap-stg-frontend
+    plan: free
+    env: static
+    rootDir: frontend
+    buildCommand: npm install && npm run build
+    staticPublishPath: dist
+    envVars:
+      # バックエンドのデプロイ後に "https://nakamap-stg-backend.onrender.com" を設定
+      - key: VITE_API_URL
+        sync: false
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html

@@ -1,4 +1,4 @@
-import { useState, useRef, useMemo } from 'react';
+import { useState, useRef, useMemo, useEffect } from 'react';
 import { ComposableMap, Geographies, Geography, Marker, ZoomableGroup, useZoomPanContext } from 'react-simple-maps';
 import { PREFECTURE_COLOR_MAP, PREFECTURE_MAP, findNearestPrefecture } from '../utils/prefectureData';
 import type { LocationPin } from '../types';
@@ -7,10 +7,20 @@ const GEO_URL = '/japan.topojson';
 
 const MAP_CENTER: [number, number] = [136.5, 36.5];
 
-// アイコンサイズのみ固定（オフセットは地図スケールに追従）
+function useIsMobile() {
+  const [isMobile, setIsMobile] = useState(() => window.innerWidth < 768);
+  useEffect(() => {
+    const handler = () => setIsMobile(window.innerWidth < 768);
+    window.addEventListener('resize', handler);
+    return () => window.removeEventListener('resize', handler);
+  }, []);
+  return isMobile;
+}
+
 interface PinMarkerProps {
   pin: LocationPin;
   offset: [number, number];
+  r: number;
   onPinClick?: (userId: number) => void;
   wasDrag: (e: React.MouseEvent) => boolean;
   onTooltip: (name: string, x: number, y: number) => void;
@@ -18,13 +28,14 @@ interface PinMarkerProps {
   onTooltipHide: () => void;
 }
 
-function PinMarker({ pin, offset, onPinClick, wasDrag, onTooltip, onTooltipMove, onTooltipHide }: PinMarkerProps) {
+function PinMarker({ pin, offset, r, onPinClick, wasDrag, onTooltip, onTooltipMove, onTooltipHide }: PinMarkerProps) {
   const { k } = useZoomPanContext();
   const [dx, dy] = offset;
+  const ri = r - 2;
   return (
     <g transform={`scale(${1 / k})`}>
       <line x1="0" y1="0" x2={dx} y2={dy} stroke="#4A90E2" strokeWidth="1.5" />
-      <circle cx="0" cy="0" r="6" fill="#4A90E2" stroke="white" strokeWidth="1.5" />
+      <circle cx="0" cy="0" r={Math.round(r * 0.15)} fill="#4A90E2" stroke="white" strokeWidth="1.5" />
       <g
         transform={`translate(${dx}, ${dy})`}
         onClick={(e: React.MouseEvent) => { if (!wasDrag(e)) onPinClick?.(pin.userId); }}
@@ -35,18 +46,18 @@ function PinMarker({ pin, offset, onPinClick, wasDrag, onTooltip, onTooltipMove,
       >
         <defs>
           <clipPath id={`clip-${pin.userId}`}>
-            <circle cx="0" cy="0" r="43" />
+            <circle cx="0" cy="0" r={ri} />
           </clipPath>
         </defs>
         {pin.photoUrl ? (
           <>
-            <circle cx="0" cy="0" r="45" fill="white" stroke="#4A90E2" strokeWidth="3" />
-            <image href={pin.photoUrl} x="-43" y="-43" width="86" height="86" clipPath={`url(#clip-${pin.userId})`} />
+            <circle cx="0" cy="0" r={r} fill="white" stroke="#4A90E2" strokeWidth="2" />
+            <image href={pin.photoUrl} x={-ri} y={-ri} width={ri * 2} height={ri * 2} clipPath={`url(#clip-${pin.userId})`} />
           </>
         ) : (
           <>
-            <circle cx="0" cy="0" r="45" fill="#4A90E2" />
-            <text textAnchor="middle" dominantBaseline="central" style={{ fontSize: '32px', fill: 'white', fontWeight: 700, pointerEvents: 'none' }}>
+            <circle cx="0" cy="0" r={r} fill="#4A90E2" />
+            <text textAnchor="middle" dominantBaseline="central" style={{ fontSize: `${Math.round(r * 0.8)}px`, fill: 'white', fontWeight: 700, pointerEvents: 'none' }}>
               {(pin.name ?? '?').charAt(0)}
             </text>
           </>
@@ -156,6 +167,8 @@ export default function JapanPrefectureMap({
   selectedLat,
   selectedLng,
 }: JapanPrefectureMapProps) {
+  const isMobile = useIsMobile();
+  const iconRadius = isMobile ? 45 : 20;
   const [hoveredId, setHoveredId] = useState<number | null>(null);
   const [pinTooltip, setPinTooltip] = useState<{ name: string; x: number; y: number } | null>(null);
   const mouseDownPos = useRef<{ x: number; y: number } | null>(null);
@@ -244,6 +257,7 @@ export default function JapanPrefectureMap({
                 <PinMarker
                   pin={pin}
                   offset={offsets[i]}
+                  r={iconRadius}
                   onPinClick={onPinClick}
                   wasDrag={wasDrag}
                   onTooltip={(name, x, y) => setPinTooltip({ name, x, y })}
